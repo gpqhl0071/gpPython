@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>创建BEAN</title>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+</head>
+
+<style>
+    textarea {
+        resize: none;
+        width: 1300px;
+        height: 20px;
+    }
+</style>
+<script>
+    function gen() {
+
+        var name = $('#name').val();
+        var desc = $('#desc').val();
+
+        $.ajax(
+            {
+                url: "/genBeanCode",
+                data: 'name=' + name + "&desc=" + desc,
+                type: 'POST',
+                success: function (response) {
+                    console.log(response);
+                    $('#result').html(response);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            }
+        );
+    }
+</script>
+<body>
+<form>
+    属性：<br>
+    <textarea name="name" id="name"></textarea> <br>
+    描述：<br>
+    <textarea name="desc" id="desc"></textarea> <br>
+
+    <button id="b01" type="button" onclick="gen()">生成代码</button> <br>
+
+    <textarea name="result" id="result" style="width: 800px;height: 400px"></textarea> <br>
+</form>
+</body>
+</html>
