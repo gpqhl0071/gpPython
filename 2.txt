@@ -1,0 +1,3154 @@
+# 大象理财APP开发接口
+
+## 版本变更记录
+
+|  版本号   | 变更人 |    变更时间    |                                  备注                                  |
+| ------ | --- | ---------- | -------------------------------------------------------------------- |
+|  V2.4  | 黄一炜 | 2014-9-23  |                                 初始创建                                 |
+|  V2.6  | 黄一炜 | 2015-4-20  |                              启用业务流水号字段                               |
+|  V2.6  | 黄一炜 |  2015-5-4  |                              根据活动修改相关接口                              |
+|  V2.8  | 孟繁峰 | 2015-11-13 |                                手机公告接口                                |
+| V3.0.3 | 陈跃鹏 | 2017-01-16 |                               4) 个人信息                                |
+|  V3.1  | 陈跃鹏 | 2017-03-14 |                               22) 双乾支付                               |
+| V3.1.1 | 黄佳贵 | 2017-05-17 |                1) 注册接口 , 4) 个人信息, 16) 短信校验 , 24)验证信息                 |
+| V3.2.0 | 高鹏  | 2017-09-14 | 增加接口51，活体认证  修改接口 ,20)获取银行卡信息 , 新增接口 52)是否大象国际支持的银行卡 , 修改接口 25)绑定银行卡 |
+| V3.3.4 | 高鹏  | 2017-11-30 |           64) 邦付宝 -- 快捷支付 -- 下单 ， 66) 邦付宝 -- 快捷支付 -- 确认支付            |
+| V3.3.4 | 黄佳贵 | 2017-11-30 |                       65) 邦付宝 -- 快捷支付 -- 申请验证码                       |
+
+## 1. 引言
+
+## 2. 分析设计
+
+## 3. HTTP服务接口
+
+### 3.1 接口综述
+
+#### 1) HTTP接口概述    HTTP是Hyper Text Transfer Protocol（超文本传输协议）的缩写。它的发展是万维网协会（World Wide Web Consortium）和Internet工作小组IETF（Internet Engineering Task Force）合作的结果，（他们）最终发布了一系列的RFC，RFC 1945定义了HTTP/1.0版本。其中最著名的就是RFC 2616。RFC 2616定义了今天普遍使用的一个版本——HTTP 1.1。为纪念Tim Berners-Lee提出HTTP后对互联网发展的贡献，万维网协会保留有他最原始提交的版本。    HTTP协议（HyperText Transfer Protocol，超文本传输协议）是用于从WWW服务器传输超文本到本地浏览器的传送协议。它可以使浏览器更加高效，使网络传输减少。它不仅保证计算机正确快速地传输超文本文档，还确定传输文档中的哪一部分，以及哪部分内容首先显示(如文本先于图形)等。    HTTP是一个应用层协议，由请求和响应构成，是一个标准的客户端服务器模型。HTTP是一个无状态的协议。
+
+#### 2) 安全机制    所有请求需要对内容进行AES加密，参数名称保持明文。    所有响应JSON内容整体经过AES进行加密，不直接响应明文。
+
+#### 3) 认证机制    在所有指令传输过程中，必须带上令牌标示。如果没有令牌，则用空字符串代替。    服务器接收到需要授权认证的指令后，对令牌做有效性判断。令牌是否有效判断包括令牌是否为真实令牌和令牌有效期是否超时，如果令牌为真实令牌且令牌未超时，则为认证通过。    其他不需要授权认证的指令，不对令牌有效性进行校验。
+
+#### 4) 数据规约    所有请求使用POST方式。    所有响应数据使用JSON字符串进行传输。如果字段为空，则用空字符串代替。如果节点内容为空，默认情况下不包含该类节点，除非特别说明。    例如内容为空的body标签，响应的内容中就会有一个不包含内容的body空标签。    具体接口数据格式详见各功能接口部分。
+
+#### 5) 业务流水号    业务流水号“{seqId}”为每次请求的唯一标识，如果请求的业务流水号没有发生变化，则认为是重复请求。    业务流水号格式为渠道标识代码加下横线加32位无符号随机字符串。    假设接口列表中定义的接口URL为：<http://ServiceAddress/user/register/{seqId}>  那么实际请求的URL即为：<http://ServiceAddress/user/register/99999_93C77D9B07E04A7BB4C315522B86B54B> 业务流水号为必须存在字段，当该请求不是客户端所在渠道发出时，也需要传递渠道号，起到Url占位作用。具体渠道号请参考4.2渠道号部分。
+
+### 3.2 公共参数
+
+### 3.3 接口列表
+
+#### 1) 注册接口 （3.1.1 新增输入参数 countryCode）
+
+##### 方法名称
+
+register
+
+##### 方法描述
+
+注册。
+
+##### 访问路径
+
+<http://ServiceAddress/user/register/{seqId}>
+
+|      参数代码      | 参数名称  |    数据类型     |                                                                                                      参数说明                                                                                                       |
+| -------------- | ----- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     token      |  令牌值  | varchar(64) |                                                                                                                                                                                                                 |
+|     verNo      |  版本号  | varchar(16) |                                                                                                如果不存在，默认使用最低版本接口                                                                                                 |
+| confimPassword | 密码确认  | varchar(64) |                                                                                                                                                                                                                 |
+|    password    |  密码   | varchar(64) |                                                                                                                                                                                                                 |
+|     phone      |  手机号  | varchar(11) |                                                                                                                                                                                                                 |
+|   phoneCode    | 手机验证码 | varchar(64) |                                                                                                                                                                                                                 |
+|    nikeName    |  昵称   | varchar(20) |                                                                                                                                                                                                                 |
+|   recommend    |  推荐人  | varchar(50) |                                                                                              推荐人的手机号或邮箱；若为空，则没有推荐人                                                                                              |
+|  countryCode   |  国家码  | varchar(60) | zh-cn 86 中国大陆,zh-hk 852 中国香港,zh-mo 853 中国澳门,zh-tw 886 中国台湾,en-au 61 澳大利亚,de-de 49 德国,fr-fr 33 法国,ko-kr 82 韩国,en-ca 1 加拿大,en-us 1 美国,en-my 60 马来西亚,ja-jp 81 日本,en-th 66 泰国,en-sg 65 新加坡,en-nz 64 新西兰,en-gb 44 英国 |
+
+##### 输出参数
+
+|  参数代码  | 参数名称 |    数据类型     | 参数说明  |
+| ------ | ---- | ----------- | ----- |
+| token  | 令牌值  | varchar(64) | 随机字符串 |
+| userId | 用户ID |   Integer   |       |
+
+##### 响应报文示例
+
+#### 2) 登录接口
+
+##### 方法名称
+
+login
+
+##### 方法描述
+
+进行用户登录，并且获取令牌。
+
+##### 访问路径
+
+<http://ServiceAddress/user/login/{seqId}>
+
+##### 输入参数
+
+|   参数代码   | 参数名称 |    数据类型     |       参数说明       |
+| -------- | ---- | ----------- | ---------------- |
+|  verNo   | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| userName | 登录账号 | varchar(50) |                  |
+| password |  密码  | varchar(64) |     未经过MD5加密     |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+#### 3) 注销接口
+
+##### 方法名称
+
+loginout
+
+##### 方法描述
+
+进行用户登录，并且获取令牌。
+
+##### 访问路径
+
+<http://ServiceAddress/user/loginout/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| token  | 令牌值  | varchar(16) |                  |
+| verNo  | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| userId | 用户ID |   Integer   |                  |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 4) 个人信息（3.1.1 新增输出参数 countryCode , isInter, riskLevel）
+
+##### 方法名称
+
+userInfo
+
+##### 方法描述
+
+获取用户基本信息和用户余额。
+
+##### 访问路径
+
+<http://ServiceAddress/user/userInfo/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| userId | 用户ID |   Integer   |                  |
+| verNo  | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| token  | 令牌值  | varchar(64) |                  |   |
+
+##### 输出参数
+
+|            参数代码            |    参数名称    |    数据类型     |                                                                                                      参数说明                                                                                                       |
+| -------------------------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|            mail            |     邮箱     | varchar(50) |                                                                                                                                                                                                                 |
+|           phone            |    手机号     | varchar(11) |                                                                                                                                                                                                                 |
+|        countryCode         |    国家码     | varchar(60) | zh-cn 86 中国大陆,zh-hk 852 中国香港,zh-mo 853 中国澳门,zh-tw 886 中国台湾,en-au 61 澳大利亚,de-de 49 德国,fr-fr 33 法国,ko-kr 82 韩国,en-ca 1 加拿大,en-us 1 美国,en-my 60 马来西亚,ja-jp 81 日本,en-th 66 泰国,en-sg 65 新加坡,en-nz 64 新西兰,en-gb 44 英国 |
+|          isInter           | 是否为国际手机号码  |   Integer   |                                                                                                      0否 1是                                                                                                      |
+|         isFounder          |   是否发起人    |   Integer   |                                                                                                   是否发起人 1是 0否                                                                                                   |
+|         isManager          |  是否资金管理人   |   Integer   |                                                                                                  是否基金经理 1是 0否                                                                                                   |
+|        mailIsEnable        |   邮箱是否激活   |   Integer   |                                                                                                    1激活 0 未激活                                                                                                    |
+|        phoneIsBind         |   手机是否绑定   |   Integer   |                                                                                                    1 绑定 0未绑定                                                                                                    |
+|        identityType        |    证件类型    |   Integer   |                                                                                                   1 身份证 2 护照                                                                                                    |
+|        identityAuth        |    身份认证    |   Integer   |                                                                                               1认证 0未认证 2审核中 9认证失败                                                                                               |
+|          nickname          |     昵称     | varchar(20) |
+|            sex             |     性别     |   Integer   |                                                                                                  性别 1男 0女 2保密                                                                                                   |
+|     headPortraitsImage     |   头像文件名    | varchar(50) |                                                                                                                                                                                                                 |
+|        hasTradePwd         |  是否有交易密码   |   Boolean   |                                                                                                                                                                                                                 |
+|         balanceCny         |   人民币余额    |    Long     |                                                                                                      以分为单位                                                                                                      |
+|        freezeAmount        |    冻结金额    |    Long     |                                                                                                      以分为单位                                                                                                      |
+|   profitLossAmountTotal    |    累计收益    |    Long     |                                                                                                      以分为单位                                                                                                      |
+|        freezeEquity        | 被冻结金额的当前净值 |    Long     |                                                                                                      以分为单位                                                                                                      |
+|     userGradeInfoList      |  用户等级列表开始  |
+| userGradeInfoList.roleType |    角色类型    |   Integer   |                                                                                                     0：合伙人;                                                                                                      |
+
+1：发起人  
+2：基金经理                                                                                           | |  userGradeInfoList.grade   |    用户等级    |   Integer   |                                                                                                                                                                                                                 | |  userGradeInfoList.amount  |    段位金额    |    Long     |                                                                                                                                                                                                                 | |     userGradeInfoList      |  用户等级列表结束  | |          realName          |    真实姓名    | varchar(20) |                                                                                                                                                                                                                 | |      identityCardNum       |   身份证号码    | varchar(30) |                                                                                                                                                                                                                 | |    accumulatedEarnings     |    累计收益    |    long     |                                                                                                                                                                                                                 | |      investmentAmount      |    投资金额    |    long     |                                                                                                                                                                                                                 | |     joinProductsAmount     |   入伙产品金额   |    long     |                                                                                                                                                                                                                 | |        followAmount        |   跟投投资金额   |    long     |                                                                                                                                                                                                                 | |    createProductsAmount    |   发起合伙金额   |    long     |                                                                                                                                                                                                                 | |   managerProductsAmount    |   资金管理金额   |    long     |                                                                                                                                                                                                                 | |         redAmount          |   我的红包金额   |    long     |                                                                                                                                                                                                                 | |           quota            |    免费额度    |    long     |                                                                                                    3.0.4 防套现                                                                                                    | |         riskLevel          |   用户风险等级   |    long     |                                                                                        0未做风险测评  1安逸型 2保守型 3稳健型 4积极型 5激进型                                                                                        |   | |       riskLevelName        |   用户风险等级   |    long     |                                                                                        0未做风险测评  1安逸型 2保守型 3稳健型 4积极型 5激进型                                                                                        |   | |          riskDate          | 最后一次风险评测日期 |    Date     |                                                                                                                                                                                                                 |   | |      identityCountry       |   实名认证国家   |   varchar   |                                                                                                                                                                                                                 |   | |    identityCountryName     |  证件国家中文描述  |             |
+
+##### 响应报文示例
+
+---
+
+#### 5) 个人资产
+
+##### 方法名称
+
+userProperty
+
+##### 方法描述
+
+获取用户资产信息，包括用户余额和红包
+
+##### 访问路径
+
+<http://ServiceAddress/user/userProperty/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| userId | 用户ID |   Integer   |                  |
+| verNo  | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| token  | 令牌值  | varchar(64) |                  |
+
+##### 输出参数
+
+|           参数代码           |      参数名称      |     数据类型     |                   参数说明                    |
+| ------------------------ | -------------- | ------------ | ----------------------------------------- |
+|        balanceCny        |     人民币余额      |     Long     |                   以分为单位                   |
+|       freezeAmount       |      冻结金额      |     Long     |                   以分为单位                   |
+|  profitLossAmountTotal   |      累计收益      |     Long     |                   以分为单位                   |
+|       freezeEquity       |      用户净值      |     Long     |                   以分为单位                   |
+|          euqity          | 净值包含跟投和入伙产生的净值 |     Long     |                   以分为单位                   |
+|        investment        |    账户当前投资金额    |     Long     |                   以分为单位                   |
+|      **redbagList**      |     可用红包列表     |     List     |                                           |
+| **redbagList**.regbagId  |      红包ID      |   Integer    |                                           |
+|  **redbagList**.source   |      红包来源      | Varchar(100) |                                           |
+|  **redbagList**.amount   |       面额       |     Long     | 以整数记录小数并从小数点后两位开始，类型为1和2时代表金额，类型为3时代表补贴比例 |
+| **redbagList**.beginTime |      获取时间      |   DateTime   |                                           |
+| **redbagList**.lastTime  |      过期时间      |   DateTime   |                                           |
+|  **redbagList**.useTime  |      使用时间      |   DateTime   |                                           |
+
+##### 响应报文示例
+
+---
+
+#### 6) 获取推荐产品
+
+##### 方法名称
+
+getFundByRisk
+
+##### 方法描述
+
+获取推荐产品。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/getFundByRisk/{seqId}>
+
+##### 输入参数
+
+|    参数代码     |  参数名称  |    数据类型     |                            参数说明                            |
+| ----------- | ------ | ----------- | ---------------------------------------------------------- |
+| fundRiskKey | 风险推荐类型 | Varchar(64) | 保本稳健型：fund_no_risk低风险产品：fund_low_risk高风险型产品：fund_high_risk |
+|    verNo    |  版本号   | Varchar(16) |                      如果不存在，默认使用最低版本接口                      |
+|    token    |  令牌值   | varchar(64) |                                                            |   |
+
+##### 输出参数
+
+|             参数代码              |        参数名称         |     数据类型     |                     参数说明                     |
+| ----------------------------- | ------------------- | ------------ | -------------------------------------------- |
+|            fundId             |        产品ID         |   Integer    |                                              |
+|           fundName            |        产品名称         | Varchar(50)  |                                              |
+|          productType          |        产品类型         |   Integer    |                                              |
+|           funderId            |        发起人ID        |   Integer    |                                              |
+|         fundManagerId         |       资金管理人ID       |   Integer    |                                              |
+|        fundManagerName        |       资金管理人名称       | Varchar(20)  |                                              |
+|          expectYield          |        预期收益率        |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|        expectYearYield        |       预期年化收益率       |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|          fundMaxRisk          |       产品最大风险        |    double    |              整数表示小数，以小数点后两位开始记录              |
+|          partnerRisk          |        合伙人风险        |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|       targetRaiseAmount       |       目标募集金额        |     Long     |              整数表示小数，以小数点后两位开始记录              |
+|        currRaiseAmount        |       当前募集总额        |     Long     |                    以分为单位                     |
+|      expectPartnerYield       |      合伙人预期收益率       |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|    expectPartnerYearYield     |     合伙人预期年化收益率      |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|   expectPartnerRegularYield   |     合伙人预期固定收益率      |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|    partnerRegularYearYield    |     合伙人固定年化收益率      |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|   actualPartnerRegularYield   |     合伙人实际固定收益率      |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|       allowJoinUserIds        |      允许入伙用户ID       | Varchar(512) | 用户ID的集合，使用英文逗号分隔的字符串，如：123123,1231233,222333 |
+|           minAmount           |       最小入伙金额        |     Long     |                    以分为单位                     |
+|           maxAmount           |       最大入伙金额        |     Long     |                    以分为单位                     |
+|          redBagOnly           |      是否只允许红包入伙      |     long     |                                              |
+|            status             |        基金状态         |   Integer    |         1发起未确认 2募集中 3操作中 4已清盘 5发起失败          |
+|         planOperHours         |       预计操作小时数       |   Integer    |                                              |
+|          investScope          |        投资范围         |    String    |                                              |
+|             rate              |       大象币使用费率       |     int      |        如12.34%，则返回1234，除以10000为0.1234        |
+|           multiple            |       大象币杠杆率        |     int      |          若返回400，则400/100.0=实际倍率4.0           |
+|          exFundInfo           |       产品大象币信息       |    Object    |                                              |
+|          isLoanFund           |       是否使用大象币       |   Boolean    |                                              |
+|            srcFix             |     未用大象币固定收益率      |   Integer    |                正整数。若不支持则返回-1                 |
+|            dxbFix             |     使用大象币固定收益率      |   Integer    |                正整数。若不支持则返回-1                 |
+|            srcFlt             |     未用大象币浮动收益率      |   Integer    |                正整数。若不支持则返回-1                 |
+|            dxbFlt             |     使用大象币浮动收益率      |   Integer    |                正整数。若不支持则返回-1                 |
+|         exFollowInfo          |        推荐策信息        |    Object    |                                              |
+|        exFollowInfo.id        |        策略Id         |     int      |                                              |
+|       exFollowInfo.name       |        策略名称         |    String    |                                              |
+|    exFollowInfo.profitRate    |        当前收益率        |    double    |                                              |
+|     exFollowInfo.maxDraw      |        最大回撤         |    double    |                                              |
+|   exFollowInfo.totalAmount    |        跟投总额         |    double    |                                              |
+|  exFollowInfo.followPersons   |       当前跟投人数        |     int      |                                              |
+|   exFollowInfo.providerRate   |      策略提供者提成比例      |    double    |                                              |
+|   exFollowInfo.platformRate   |       平台提成比例        |    double    |                                              |
+|   exFollowInfo.followStatus   | 是否允许跟投：0,不可跟 1,可以跟投 |     int      |                                              |
+|  exFollowInfo.maxFollowCount  |      允许最大跟投人数       |     int      |                                              |
+|       exFollowInfo.days       |        公开周期         |     int      |                                              |
+|         earningsList          |       策略净值列表        |              |                                              |
+|    earningsList.createTime    |       更新净值日期        |    String    |                                              |
+|    earningsList.unitEquity    |     当日单位净值（USD）     |    double    |                                              |
+| earningsList.totalFollowMoney |    当日跟投资金总量（CHN）    |    double    |                                              |
+
+##### 响应报文示例
+
+#### 7)募集中产品列表
+
+##### 方法名称
+
+getRaiseFundList
+
+##### 方法描述
+
+获取产品列表。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/getRaiseFundList/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |    数据类型     |                     参数说明                     |
+| --------- | ------ | ----------- | -------------------------------------------- |
+| sortName  | 要排序的字段 |   Integer   | 预期年化：110最大风险：120募集金额：130 募集进度：140 剩余募集时间：150 |
+| sortDesc  |  排序类型  | Varchar(10) |                 AES：0 DESC：1                 |
+| pageIndex | 数据起始页  |   Integer   |                   起始页从0开始                    |
+| pageSize  | 每页数据大小 |   Integer   |                   每页包含数据条数                   |
+|   verNo   |  版本号   | Varchar(16) |               如果不存在，默认使用最低版本接口               |
+|   token   |  令牌值   | varchar(64) |                                              |   |
+
+##### 输出参数
+
+|                参数代码                |    参数名称    |     数据类型     |                     参数说明                     |
+| ---------------------------------- | ---------- | ------------ | -------------------------------------------- |
+|           totalRaiseFund           |    总条数     |   Integer    |                                              |
+|            recommendIds            |   推荐产品ID   | Varchar(512) | 产品ID的集合，使用英文逗号分隔的字符串，如：123123,1231233,222333 |
+|              fundList              |    产品列表    |     List     |                                              |
+|          fundList.fundId           |    产品ID    |   Integer    |
+|         fundList.fundCode          |    产品代码    | Varchar(12)  |                                              |
+|         fundList.fundName          |    产品名称    | Varchar(50)  |                                              |
+|        fundList.productType        |    产品类型    |   Integer    |                                              |
+|       fundList.fundManagerId       |  资金管理人ID   |   Integer    |                                              |
+|      fundList.fundManagerName      |  资金管理人名称   | Varchar(20)  |                                              |
+|        fundList.expectYield        |   预期收益率    |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|      fundList.expectYearYield      |  预期年化收益率   |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|        fundList.fundMaxRisk        |   产品最大风险   |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|        fundList.partnerRisk        |   合伙人风险    |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|     fundList.targetRaiseAmount     |   目标募集金额   |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|      fundList.currRaiseAmount      |   当前募集总额   |     Long     |                    以分为单位                     |
+|    fundList.expectPartnerYield     |  合伙人预期收益率  |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|  fundList.expectPartnerYearYield   | 合伙人预期年化收益率 |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+| fundList.expectPartnerRegularYield | 合伙人预期固定收益率 |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|  fundList.partnerRegularYearYield  | 合伙人固定年化收益率 |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+| fundList.actualPartnerRegularYield | 合伙人实际固定收益率 |   Integer    |              整数表示小数，以小数点后两位开始记录              |
+|       fundList.planOperHours       |  预计操作小时数   |   Integer    |                                              |
+|     fundList.allowJoinUserIds      |  允许入伙用户ID  | Varchar(512) | 用户ID的集合，使用英文逗号分隔的字符串，如：123123,1231233,222333 |
+|         fundList.maxAmount         |   最大入伙金额   |     Long     |                    以分为单位                     |
+|         fundList.minAmount         |   最小入伙金额   |     Long     |                    以分为单位                     |
+|        fundList.redBagOnly         | 是否只允许红包入伙  |     long     |                                              |
+|       fundList.partnerCount        |    合伙人数    |   Integer    |                                              |
+|        fundList.investScope        |    投资范围    |    String    |                                              |
+|           fundList.rate            |  大象币使用费率   |     int      |        如12.34%，则返回1234，除以10000为0.1234        |
+|         fundList.multiple          |   大象币杠杆率   |     int      |          若返回400，则400/100.0=实际倍率4.0           |
+|        fundList.exFundInfo         |  产品大象币信息   |    Object    |                                              |
+|   fundList.exFundInfo.isLoanFund   |  是否使用大象币   |   Boolean    |                                              |
+|     fundList.exFundInfo.srcFix     | 未用大象币固定收益率 |   Integer    |                正整数。若不支持则返回-1                 |
+|     fundList.exFundInfo.dxbFix     | 使用大象币固定收益率 |   Integer    |                正整数。若不支持则返回-1                 |
+|     fundList.exFundInfo.srcFlt     | 未用大象币浮动收益率 |   Integer    |                正整数。若不支持则返回-1                 |
+|     fundList.exFundInfo.dxbFlt     | 使用大象币浮动收益率 |   Integer    |                正整数。若不支持则返回-1                 |
+
+##### 响应报文示例
+
+#### 8) 产品详情
+
+##### 方法名称
+
+getFundById
+
+##### 方法描述
+
+根据产品ID获取产品详情。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/getFundById/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| fundId | 产品ID |   Integer   |                  |
+| verNo  | 版本号  | Varchar(16) | 如果不存在，默认使用最低版本接口 |
+| token  | 令牌值  | varchar(64) |                  |   |
+
+##### 输出参数
+
+|                 参数代码                  |         参数名称         |     数据类型      |                            参数说明                             |
+| ------------------------------------- | -------------------- | ------------- | ----------------------------------------------------------- |
+|                fundId                 |         产品ID         |    Integer    |                                                             |
+|              systemTime               |        当前系统时间        |     Long      |                                                             |
+|               funderId                |        发起人ID         |    Integer    |                                                             |
+|              funderName               |        发起人名称         |  Varchar(20)  |                                                             |
+|              productType              |         产品类型         |    Integer    |                                                             |
+|               fundCode                |         产品代码         |  Varchar(12)  |                                                             |
+|               fundName                |         产品名称         |  Varchar(50)  |                                                             |
+|             fundManagerId             |       资金管理人ID        |    Integer    |                                                             |
+|            fundManagerName            |       资金管理人名称        |  Varchar(20)  |                                                             |
+|              investScope              |         投资范围         |  Varchar(40)  |            投资范围 1外汇 2 股票 3期货 4贵金属 5债券。多个范围可同时存在。            |
+|               tradeDir                |         交易方向         |    Integer    |                      交易方向 1做空 2做多 3双向                       |
+|            investStrategy             |         投资策略         |    Integer    | 投资策略 1趋势跟踪 2背离交易 3价值投资 4超买超卖 5分散化交易 6量化交易 7基本面 8宏观投资 9高频交易  |
+|              expectYield              |        预期收益率         |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|            expectYearYield            |       预期年化收益率        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|              actualYield              |        实际收益率         |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|            actualYearYield            |       实际年化收益率        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|              fundMaxRisk              |        产品最大风险        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|              partnerRisk              |        合伙人风险         |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|           targetRaiseAmount           |        目标募集金额        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|            currRaiseAmount            |        当前募集总额        |     Long      |                            以分为单位                            |
+|           currRaiseAmountRb           |      当前募集额中红包总额      |     Long      |                            以分为单位                            |
+|               raiseMin                |       基金最小募集金额       |     Long      |                            以分为单位                            |
+|              funderRisk               |       发起人承担风险        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|           funderRiskAmount            |      发起人承担风险金额       |     Long      |                            以分为单位                            |
+|              managerRisk              |       基金经理承担风险       |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|           managerRiskAmount           |      基金经理承担风险金额      |     Long      |                            以分为单位                            |
+|         adminerCommissionWay          |     发起人和基金经理提成方式     |    Integer    |             发起人和基金经理提成方式 1固定提成 2阶梯分段固定 3阶梯分段累计              |
+|       adminerFixCommissionRate        |    发起人和基金经理固定提成比例    |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|         funderCommissionRate          |       发起人提成比例        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|         managerCommissionRate         |       基金经理提成比例       |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|          riskCommissionRate           |       风险金提成比例        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|           expectFunderYield           |       发起人预期收益率       |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|           actualFunderYield           |       发起人实际收益率       |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|         expectFunderYearYield         |      预期发起人年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|         actualFunderYearYield         |      实际发起人年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        expectFunderCommission         |     预期发起人风险金提成金额     |     Long      |                            以分为单位                            |
+|          expectManagerYield           |      资金管理人预期收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|          actualManagerYield           |      资金管理人实际收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        expectManagerYearYield         |     预期基金经理年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        actualManagerYearYield         |     实际基金经理年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        expectManagerCommission        |    预期基金经理风险金提成金额     |     Long      |                            以分为单位                            |
+|          expectPartnerYield           |       合伙人预期收益率       |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|          actualPartnerYield           |       合伙人实际收益率       |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        expectPartnerYearYield         |      合伙人预期年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        actualPartnerYearYield         |      合伙人实际年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|       expectPartnerRegularYield       |      合伙人预期固定收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        partnerRegularYearYield        |      合伙人固定年化收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|       actualPartnerRegularYield       |      合伙人实际固定收益率      |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|              raiseHours               |        募集期小时数        |    Integer    |                                                             |
+|           planRaiseEndtime            |       预期募集结束时间       |   DateTime    |                                                             |
+|          achievedOperatable           |    达到目标是否可提前进入操作期    |    Integer    |                            1是 0否                            |
+|             planOperStart             |      计划操作期开始时间       |   DateTime    |                                                             |
+|            actualOperStart            |      实际操作期开始时间       |   DateTime    |                                                             |
+|              planOperEnd              |      计划操作期结束时间       |   DateTime    |                                                             |
+|         actExpectOperEndTime          |      实际计划操作结束时间      |   DateTime    |                                                             |
+|             planOperHours             |       预计操作小时数        |    Integer    |                                                             |
+|            actualOperHours            |       实际操作小时数        |    Integer    |                                                             |
+|               fundDesc                |         基金描述         | Varchar(1000) |                                                             |
+|        achievedYieldCloseable         |     达到收益是否可提前清盘      |    Integer    |                            1是 0否                            |
+|                status                 |         基金状态         |    Integer    |                 1发起未确认 2募集中 3操作中 4已清盘 5发起失败                 |
+|              closeReason              |        基金关闭原因        |    Integer    | 1基金清盘:操作期间到期 2基金清盘:达到亏损条件 3基金清盘:达到收益目标 4基金经理拒绝 5发起人撤销 6募集失败 |
+|            fundCreateTime             |      发起人创建基金时间       |   DateTime    |                                                             |
+|          fundRaiseStartTime           | 基金开始募集时间（也为基金经理确认时间） |   DateTime    |                                                             |
+|           fundRaiseEndTime            |     基金募集结束时间(实际)     |   DateTime    |                                                             |
+|               closeTime               |         关闭时间         |   DateTime    |                                                             |
+|        managerConfirmDeadline         |       基金经理确认期限       |   DateTime    |                                                             |
+|               curEquity               |         当前净值         |     Long      |                            以分为单位                            |
+|               brokerId                |        经纪商ID         |    Integer    |                                                             |
+|              brokerName               |        经纪商名称         |  Varchar(32)  |                                                             |
+|             partnerCount              |         合伙人数         |    Integer    |                                                             |
+|           allowJoinUserIds            |       允许入伙用户ID       | Varchar(512)  |        用户ID的集合，使用英文逗号分隔的字符串，如：123123,1231233,222333         |
+|               minAmount               |        最小入伙金额        |     Long      |                            以分为单位                            |
+|               maxAmount               |        最大入伙金额        |     Long      |                            以分为单位                            |
+|              redBagOnly               |      是否只允许红包入伙       |     long      |                                                             |
+|        expectFunderYieldAmount        |      发起人预期收益金额       |     Long      |                            以分为单位                            |
+|       expectManagerYieldAmount        |     资金管理人预期收益金额      |     Long      |                            以分为单位                            |
+|       expectPartnerYieldAmount        |      合伙人预期收益金额       |     Long      |                            以分为单位                            |
+|      expectPartnerRegularAmount       |     合伙人预期固定收益金额      |     Long      |                            以分为单位                            |
+|                 rate                  |       大象币使用费率        |      int      |               如12.34%，则返回1234，除以10000为0.1234                |
+|               multiple                |        大象币杠杆率        |      int      |                  若返回400，则400/100.0=实际倍率4.0                  |
+|          commissionStageList          |        分段返点集合        |     List      |                如果发起人和基金经理提成方式为固定提成，则此节点不存在。                 |
+|              exFundInfo               |       产品大象币信息        |    Object     |                                                             |
+| commissionStageList.commissionStageId |        分段提成ID        |    Integer    |                                                             |
+|       commissionStageList.start       |       开始值（盈利）        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|        commissionStageList.end        |       结束值（盈利）        |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|       commissionStageList.point       |          比例          |    Integer    |                     整数表示小数，以小数点后两位开始记录                      |
+|    commissionStageList.isTemplate     |        是否是模板的        |    Integer    |                           0:否 1:是                           |
+|         exFundInfo.isLoanFund         |       是否使用大象币        |    Boolean    |
+|           exFundInfo.srcFix           |      未用大象币固定收益率      |    Integer    |                        正整数。若不支持则返回-1                        |
+|           exFundInfo.dxbFix           |      使用大象币固定收益率      |    Integer    |                        正整数。若不支持则返回-1                        |
+|           exFundInfo.srcFlt           |      未用大象币浮动收益率      |    Integer    |                        正整数。若不支持则返回-1                        |
+|           exFundInfo.dxbFlt           |      使用大象币浮动收益率      |    Integer    |                        正整数。若不支持则返回-1                        |
+
+##### 响应报文示例
+
+#### 9) 发起人档案
+
+##### 方法名称
+
+funderInfo
+
+##### 方法描述
+
+获取发起人档案信息。
+
+##### 访问路径
+
+<http://ServiceAddress/user/funderInfo/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| userId | 用户ID |   Integer   |                  |
+| verNo  | 版本号  | Varchar(16) | 如果不存在，默认使用最低版本接口 |
+| token  | 令牌值  | varchar(64) |                  |   |
+
+##### 输出参数
+
+|        参数代码        |    参数名称    |    数据类型     |        参数说明        |
+| ------------------ | ---------- | ----------- | ------------------ |
+|    mailIsEnable    |   邮箱是否激活   |   Integer   |     1激活 0 未激活      |
+|    phoneIsBind     |   手机是否绑定   |   Integer   |     1 绑定 0未绑定      |
+|    identityAuth    |    身份认证    |   Integer   |   1认证 0未认证 2审核中    |
+|      nickname      |     昵称     | Varchar(20) |                    |
+| headPortraitsImage |   头像文件名    | Varchar(50) |                    |
+|   avgActualYield   |  平均年化收益率   |   Integer   | 整数表示小数，以小数点后两位开始记录 |
+|     failedCnt      |  发起失败产品总数  |   Integer   |                    |
+|     successCnt     |  成功发起产品总数  |   Integer   |                    |
+|      totalCnt      |  有效发起产品总数  |   Integer   |                    |
+|   hissuccessCnt    | 发起的已清盘产品数量 |   Integer   |                    |
+|   successPersent   |  产品发起成功率   |    Long     | 整数表示小数，以小数点后四位开始记录 |
+|     profitCnt      |   盈利产品总数   |   Integer   |                    |
+|    totalProfit     |   历史总收益    |    Long     | 整数表示小数，以小数点后两位开始记录 |
+|   partnerProfit    |   合伙人总收益   |    Long     | 整数表示小数，以小数点后两位开始记录 |
+|     avgAmount      | 历史平均发起产品规模 |    Long     |       以分为单位        |
+|     userGrade      |   用户等级信息   |   Object    |                    |
+| userGrade.roleType |    角色类型    |   Integer   |  1合伙人 2发起人 3资金管理人  |
+|  userGrade.grade   |     等级     |   Integer   |                    |
+|  userGrade.amount  |  历史募集总金额   |    Long     |       以分为单位        |
+
+##### 响应报文示例
+
+#### 10) 资金管理人档案
+
+##### 方法名称
+
+managerInfo
+
+##### 方法描述
+
+获取发起人档案信息。
+
+##### 访问路径
+
+<http://ServiceAddress/user/managerInfo/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| userId | 用户ID |   Integer   |                  |
+| verNo  | 版本号  | Varchar(16) | 如果不存在，默认使用最低版本接口 |
+| token  | 令牌值  | varchar(64) |                  |   |
+
+##### 输出参数
+
+|        参数代码        |   参数名称   |    数据类型     |        参数说明        |
+| ------------------ | -------- | ----------- | ------------------ |
+|    mailIsEnable    |  邮箱是否激活  |   Integer   |     1激活 0 未激活      |
+|    phoneIsBind     |  手机是否绑定  |   Integer   |     1 绑定 0未绑定      |
+|    identityAuth    |   身份认证   |   Integer   |   1认证 0未认证 2审核中    |
+|      nickname      |    昵称    | Varchar(20) |                    |
+| headPortraitsImage |  头像文件名   | Varchar(50) |                    |
+|   avgActualYield   | 平均年化收益率  |   Integer   | 整数表示小数，以小数点后两位开始记录 |
+|  operatingFundCnt  | 操作中产品总数  |   Integer   |                    |
+|    liqedFundCnt    | 已清盘产品总数  |   Integer   |                    |
+|  totalProductCnt   |  操作产品总数  |   Integer   |                    |
+|  profitProductCnt  |  盈利产品总数  |   Integer   |                    |
+| reachProfitPersent | 操作产品靠谱率  |    Long     | 整数表示小数，以小数点后四位开始记录 |
+|   partnerProfit    |  合伙人总收益  |   Integer   | 整数表示小数，以小数点后两位开始记录 |
+|    totalAmount     |  操作总金额   |    Long     |       以分为单位        |
+|     avgAmount      | 平均操作产品规模 |    Long     |       以分为单位        |
+|     userGrade      |  用户等级信息  |   Object    |                    |
+| userGrade.roleType |   角色类型   |   Integer   |  1合伙人 2发起人 3资金管理人  |
+|  userGrade.grade   |    等级    |   Integer   |                    |
+|  userGrade.amount  | 历史盈亏总金额  |    Long     |       以分为单位        |
+
+##### 响应报文示例
+
+#### 11) 我的入伙记录
+
+##### 方法名称
+
+tradeDetailInfo
+
+##### 方法描述
+
+获取入伙记录。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/tradeDetailInfo/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |    数据类型     |                参数说明                 |
+| --------- | ------ | ----------- | ----------------------------------- |
+|  status   |  记录状态  |   Integer   |          募集期：2 操作期：3 已清盘：4          |
+| sortName  | 要排序的字段 |   Integer   | 允许排序的字段：入伙金额：401 入伙时间：405 操作中传值：404 |
+| sortDesc  |  排序类型  |   Integer   |            AES：0 DESC：1             |
+| startDate |  开始日期  |   varchar   |                                     |
+|  endDate  |  结束日期  |   varchar   |                                     |
+| pageIndex | 数据起始页  |   Integer   |               起始页从1开始               |
+| pageSize  | 每页数据大小 |   Integer   |              每页包含数据条数               |
+|   verNo   |  版本号   | varchar(16) |          如果不存在，默认使用最低版本接口           |
+|   token   |  令牌值   | varchar(64) |                                     |
+
+##### 输出参数
+
+|                   参数代码                    |    参数名称    |    数据类型     |              参数说明              |
+| ----------------------------------------- | ---------- | ----------- | ------------------------------ |
+|             totalTradeDetail              |   入伙总记录数   |   Integer   |                                |   |
+|                 startDate                 |    起始日期    |   varchar   |                                |
+|                  endDate                  |    截止日期    |   varchar   |                                |
+|              tradeDetailList              |   入伙记录列表   |    List     |                                |   |
+|       tradeDetailList.tradeDetailId       |   入伙记录ID   |   Integer   |                                |   |
+|         tradeDetailList.fundName          |   入伙产品名称   | Varchar(20) |                                |   |
+|        tradeDetailList.productType        |    产品类型    |   Integer   |                                |   |
+|          tradeDetailList.amount           |    交易金额    |    Long     |             以分为单位              |
+|       tradeDetailList.latestEquity        |    当前净值    |    Long     |             以分为单位              |
+|  tradeDetailList.expectPartnerYearYield   |  预期年化收益率   |   Integer   |       整数表示小数，以小数点后两位开始记录       |
+| tradeDetailList.expectPartnerRegularYield | 合伙人预期固定收益率 |   Integer   |       整数表示小数，以小数点后两位开始记录       |
+|  tradeDetailList.partnerRegularYearYield  | 合伙人固定年化收益率 |   Integer   |       整数表示小数，以小数点后两位开始记录       |
+| tradeDetailList.actualPartnerRegularYield | 合伙人实际固定收益率 |   Integer   |       整数表示小数，以小数点后两位开始记录       |
+|        tradeDetailList.partnerRisk        |   合伙人风险    |   Integer   |       整数表示小数，以小数点后两位开始记录       |
+|          tradeDetailList.fundId           |    产品ID    |   Integer   |                                |
+|        tradeDetailList.investScope        |    投资范围    |   String    |                                |
+|       tradeDetailList.planOperHours       |  计划操作小时数   |   Integer   |                                |
+|           tradeDetailList.rate            |  大象币使用费率   |     int     | 如12.34%，则返回1234，除以10000为0.1234 |
+|         tradeDetailList.multiple          |   大象币杠杆率   |     int     |   若返回400，则400/100.0=实际倍率4.0    |
+|         tradeDetailList.managerId         | 产品资金管理人ID  |     int     |                                |
+|        tradeDetailList.exFundInfo         |  产品大象币信息   |   Object    |                                |
+|        tradeDetailList.isLoanFund         |  是否使用大象币   |   Boolean   |                                |
+|          tradeDetailList.srcFix           | 未用大象币固定收益率 |   Integer   |         正整数。若不支持则返回-1          |
+|          tradeDetailList.dxbFix           | 使用大象币固定收益率 |   Integer   |         正整数。若不支持则返回-1          |
+|          tradeDetailList.srcFlt           | 未用大象币浮动收益率 |   Integer   |         正整数。若不支持则返回-1          |
+|          tradeDetailList.dxbFlt           | 使用大象币浮动收益率 |   Integer   |         正整数。若不支持则返回-1          |
+
+##### 响应报文示例
+
+#### 12) 产品入伙记录
+
+##### 方法名称
+
+fundJoinDetailInfo
+
+##### 方法描述
+
+获取产品入伙记录。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/fundJoinDetailInfo/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |    数据类型     |       参数说明       |
+| --------- | ------ | ----------- | ---------------- |
+|  fundId   |  产品ID  |   Integer   |                  |
+| pageIndex | 数据起始页  |   Integer   |     起始页从1开始      |
+| pageSize  | 每页数据大小 |   Integer   |     每页包含数据条数     |
+|   verNo   |  版本号   | Varchar(16) | 如果不存在，默认使用最低版本接口 |
+|   token   |  令牌值   | Varchar(64) |                  |
+
+##### 输出参数
+
+|               参数代码               |   参数名称   |    数据类型     |       参数说明        |
+| -------------------------------- | -------- | ----------- | ----------------- |
+|         totalTradeDetail         |  入伙总记录数  |   Integer   |                   |
+|         tradeDetailList          |  入伙记录列表  |    List     |                   |
+|     tradeDetailList.nickname     |   用户昵称   | Varchar(20) |                   |
+|      tradeDetailList.amount      |   入伙金额   |    Long     |       以分为单位       |
+|  tradeDetailList.amountBalance   | 账户余额入伙金额 |    Long     |       以分为单位       |
+|       tradeDetailList.type       |   交易类型   |   Integer   |  1基金发起 2基金经理 3合伙  |
+| tradeDetailList.profitLossAmount |   盈亏金额   |    Long     | 以分为单位，大于0盈利 小于0亏损 |
+|    tradeDetailList.tradeTime     |   交易时间   |  DateTime   |       入伙时间        |
+
+#### 13) 入伙产品
+
+##### 方法名称
+
+joinFund
+
+##### 方法描述
+
+入伙产品。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/joinFund/{seqId}>
+
+##### 输入参数
+
+|       参数代码        |   参数名称    |     数据类型     |                     参数说明                      |
+| ----------------- | --------- | ------------ | --------------------------------------------- |
+|      fundId       |   产品ID    |   Integer    |                                               |
+|     tradePwd      |   支付密码    | Varchar(64)  |                   未经过MD5加密                    |
+|    countAmount    |   总入伙金额   |     Long     |                     以分为单位                     |
+|      amount       | 账户余额入伙金额  |     Long     |                     以分为单位                     |
+|    manmonCion     |    财神币    |     Long     |                     以分为单位                     |
+| mammonServiceCion |  财神币服务费   |     Long     |                     以分为单位                     |
+|     redbagIds     | 要使用的红包ID  | Varchar(512) | 红包ID的集合，使用英文逗号分隔的字符串，如：123123,1231233,222333， |
+|  caiShenTokenIds  | 要使用的财神符ID | Varchar(512) | 财神符ID的集合，使用英文逗号分隔的字符串，如：123123,1231233,222333 |
+|       verNo       |    版本号    | Varchar(16)  |               如果不存在，默认使用最低版本接口                |
+|       token       |    令牌值    | Varchar(64)  |                                               |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+#### 14) 修改支付密码
+
+##### 方法名称
+
+changeTradePwd
+
+##### 方法描述
+
+修改支付密码。
+
+##### 访问路径
+
+<http://ServiceAddress/user/changeTradePwd/{seqId}>
+
+##### 输入参数
+
+|    参数代码     | 参数名称  |    数据类型     |          参数说明          |
+| ----------- | ----- | ----------- | ---------------------- |
+|   userId    | 用户ID  |   Integer   |                        |
+| tradePwdOld | 原支付密码 | Varchar(64) | 未经过MD5加密，初始设置密码该字段可以为空 |
+|  tradePwd   | 新支付密码 | Varchar(64) |        未经过MD5加密        |
+|    type     |  方式   |   Integer   |    1、忘记登陆密码2、修改登陆密码    |
+|    phone    | 手机号码  | Varchar(11) |                        |
+|  phoneCode  | 校验内容  | Varchar(64) |   接口调用方式为2时此字段为空字符串    |
+|    verNo    |  版本号  | Varchar(16) |    如果不存在，默认使用最低版本接口    |
+|    token    |  令牌值  | Varchar(64) |                        |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+#### 15) 修改登陆密码
+
+##### 方法名称
+
+changeLoginPwd
+
+##### 方法描述
+
+修改登陆密码。
+
+##### 访问路径
+
+<http://ServiceAddress/user/changeLoginPwd/{seqId}>
+
+##### 输入参数
+
+|    参数代码     | 参数名称  |    数据类型     |          参数说明          |
+| ----------- | ----- | ----------- | ---------------------- |
+|   userId    | 用户ID  |   Integer   |                        |
+| loginPwdOld | 原登陆密码 | Varchar(64) | 未经过MD5加密，初始设置密码该字段可以为空 |
+|  loginPwd   | 新登陆密码 | Varchar(64) |        未经过MD5加密        |
+|    type     |  方式   |   Integer   |    1、忘记登陆密码2、修改登陆密码    |
+|    phone    | 手机号码  | Varchar(11) |                        |
+| countryCode |  国家码  | Varchar(60) |      type=1时才存入值       |
+|  phoneCode  | 校验内容  | Varchar(64) |   接口调用方式为2时此字段为空字符串    |
+|    verNo    |  版本号  | Varchar(16) |    如果不存在，默认使用最低版本接口    |
+|    Token    |  令牌值  | Varchar(64) |                        |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+#### 16) 短信校验（3.1.1 新增输入参数 busiType , countryCode）
+
+##### 方法名称
+
+msgValidate
+
+##### 方法描述
+
+用于需要做短信校验的地方，可以发送校验短信校验码和校验短信验证码 当isVoice = true时可以不发国家码，目前发送语音不支持境外手机号
+
+##### 访问路径
+
+<http://ServiceAddress/system/msgValidate/{seqId}>
+
+##### 输入参数
+
+|    参数代码     |  参数名称  |    数据类型     |                                                                                                                  参数说明                                                                                                                   |
+| ----------- | ------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| msgContent  |  校验内容  | Varchar(64) |                                                                                                            接口调用方式为1时此字段为空字符串                                                                                                            |
+|   toPhone   | 接受短信手机 | Varchar(24) |                                                                                                                                                                                                                                         |
+|    type     |   方式   |   Integer   |                                                                                                              1、发送短信2、校验短信                                                                                                               |
+|    verNo    |  版本号   | Varchar(16) |                                                                                                            如果不存在，默认使用最低版本接口                                                                                                             |
+|    token    |  令牌值   | Varchar(64) |                                                                                                                                                                                                                                         |
+|   isVoice   | 语音验证码  | Varchar(64) |                                                                                                           True：发送语音，False：不发送                                                                                                           |
+|  busiType   |  业务类型  | Varchar(64) |                                                                                               1-注册接口,2-修改支付密码,3-忘记登陆密码,4-线上取款申请,5-忘记支付密码                                                                                                |
+| countryCode |  国家码   | Varchar(60) | 当isVoice = true时可以不发国家码 zh-cn 86 中国大陆,zh-hk 852 中国香港,zh-mo 853 中国澳门,zh-tw 886 中国台湾,en-au 61 澳大利亚,de-de 49 德国,fr-fr 33 法国,ko-kr 82 韩国,en-ca 1 加拿大,en-us 1 美国,en-my 60 马来西亚,ja-jp 81 日本,en-th 66 泰国,en-sg 65 新加坡,en-nz 64 新西兰,en-gb 44 英国 |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+#### 17) 用户意见反馈
+
+##### 方法名称
+
+userFeedback
+
+##### 方法描述
+
+用户意见反馈
+
+##### 访问路径
+
+<http://ServiceAddress/system/userFeedback/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称 |     数据类型     |       参数说明       |
+| ---------- | ---- | ------------ | ---------------- |
+|  contact   | 联系方式 | Varchar(128) |        可选        |
+| msgContent | 反馈内容 | Varchar(256) |
+|   verNo    | 版本号  | Varchar(16)  | 如果不存在，默认使用最低版本接口 |
+|   token    | 令牌值  | Varchar(64)  |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+#### 18) 获取活动内容列表
+
+##### 方法名称
+
+getActivityList
+
+##### 方法描述
+
+获取活动内容列表
+
+##### 访问路径
+
+<http://ServiceAddress/system/getActivityList/{seqId}>
+
+##### 输入参数
+
+|   参数代码   |    参数名称    |    数据类型     |           参数说明            |
+| -------- | ---------- | ----------- | ------------------------- |
+| position | 按照活动所在位置获取 |   Integer   |   可选参数。1、首页轮播图2、热门活动列表    |
+|  IsTop   |  按照置顶类型获取  |   Integer   | 可选参数。1、只获取置顶活动 0、只获取非指定活动 |
+|  verNo   |    版本号     | Varchar(16) |     如果不存在，默认使用最低版本接口      |
+|  token   |    令牌值     | Varchar(64) |
+
+##### 输出参数
+
+|               参数代码                |   参数名称    |     数据类型     |                     参数说明                     |
+| --------------------------------- | --------- | ------------ | -------------------------------------------- |
+|           activityList            |   活动列表    |
+|      activityList.activityId      |   活动ID    |   Integer    |
+| activityList.activityReviewImgUrl | 活动预览图片路径  | Varchar(256) |
+|    activityList.activityTitle     |   活动标题    | Varchar(128) |
+|   activityList.activitySubTitle   |   活动子标题   | Varchar(512) |                   活动内容简单描述                   |
+|    activityList.activityImgUrl    |  活动图片URL  | Varchar(512) |          活动缩略图片，如果未返回，使用默认大象logo图片           |
+|       activityList.isShare        |   是否可分享   |   Boolean    |                    是否可分享                     |
+|    activityList.activityDesUrl    | 活动最终跳转url | Varchar(128) |
+|       activityList.position       |   显示位置    | Varchar(128) | 1、首页轮播图2、热门活动列表。每个位置可能会包含多个位置信息，并且为逗号分割的字符串。 |
+|         activityList.date         |   添加时间    |     date     |                     时间戳                      |
+|        activityList.IsTop         |   是否置顶    |   Boolean    |               1、true  0、false                |
+|           activityList            |  活动列表结束   |              |
+
+##### 响应报文示例
+
+#### 19) 获取版本信息
+
+##### 方法名称
+
+interfaceVerInfo
+
+##### 方法描述
+
+获取版本信息。
+
+##### 访问路径
+
+<http://ServiceAddress/system/interfaceVerInfo/{seqId}>
+
+##### 输入参数
+
+|        参数代码        |  参数名称  |    数据类型     |       参数说明       |
+| ------------------ | ------ | ----------- | ---------------- |
+| currentVersionCode | 客户端版本号 |   Integer   |
+|      channel       | 客户端渠道号 |   Integer   |    非必填字段，向前兼容    |
+|    默认为99999官方渠道    |
+|       verNo        |  版本号   | Varchar(16) | 如果不存在，默认使用最低版本接口 |
+|       token        |  令牌值   | Varchar(64) |
+
+##### 输出参数
+
+|       参数代码        |  参数名称   |      数据类型       |     参数说明     |
+| ----------------- | ------- | --------------- | ------------ |
+| remoteVersionName | 服务端版本名称 |   Varchar(24)   |
+| remoteVersionCode | 服务端版本号  |     Integer     |
+|    description    |  版本描述   |
+|    downloadUrl    | 版本下载地址  | 指向最新安装文件的http地址 |
+|        md5        |   校验值   | 该版本安装文件的MD5校验值  |
+|    updateType     |  升级方式   |     Integer     | 1、增量升级2、全新升级 |
+|   isMustUpdate    | 是否必须升级  |     Boolean     |
+
+##### 响应报文示例
+
+#### 20) 获取银行卡信息
+
+##### 方法名称
+
+getBankDetail
+
+##### 方法描述
+
+获取银行卡信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/getBankDetail/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| userId | 用户id | Varchar(24) |
+| verNo  | 版本号  | Varchar(16) | 如果不存在，默认使用最低版本接口 |
+| token  | 令牌值  | Varchar(64) |
+
+##### 输出参数
+
+|               参数代码               |         参数名称         |    数据类型     | 参数说明 |
+| -------------------------------- | -------------------- | ----------- | ---- |
+|          bankDrtailList          |        银行卡信息         |
+| bankDrtailList.lastestBankCardId |      最后使用银行卡id       |   integer   |
+|        bankDrtailList.id         |        银行卡ID         |     int     |
+|       bankDrtailList.name        |         开户人          | Varchar(24) |
+|     bankDrtailList.bankType      |         银行类型         | Varchar(24) |
+|     bankDrtailList.bankName      |         总行名称         | Varchar(24) |
+|    bankDrtailList.bankCardNum    |         银行卡号         | Varchar(24) |
+|     bankDrtailList.bindTime      |         绑定时间         |  DateTime   |
+|    bankDrtailList.unbindTime     |         解绑时间         |  DateTime   |
+|    bankDrtailList.cardProvice    |        银行卡所属省        | Varchar(24) |
+|   bankDrtailList.cardCityName    |       银行卡所属省名称       | Varchar(24) |
+|     bankDrtailList.cardCity      |        银行卡所属市        | Varchar(24) |
+|   bankDrtailList.cardCityName    |       银行卡所属市名称       | Varchar(24) |
+|  bankDrtailList.cardBankDetail   |       银行卡支行名称        | Varchar(24) |
+|     bankDrtailList.bankPhone     |       银行预留手机号        | Varchar(11) |
+|    bankDrtailList.cardStatus     | 银行卡是否认证 0-未认证 1-已经认证 | Varchar(1)  |
+|     bankDrtailList.authTime      |     认证时间，未认证时间为空     |  DateTime   |
+|          bankDrtailList          |       银行卡信息结束        |             |
+
+##### 响应报文示例
+
+---
+
+#### 21)线上取款申请
+
+##### 方法名称
+
+withDraw
+
+##### 方法描述
+
+线上取款申请
+
+##### 访问路径
+
+<http://ServiceAddress/user/withDraw/{seqId}>
+
+##### 输入参数
+
+|    参数代码     | 参数名称  |    数据类型     |             参数说明             |
+| ----------- | ----- | ----------- | ---------------------------- |
+|   userId    | 用户id  | varchar(24) |                              |
+|   bankID    | 银行卡id |   Integer   |                              |
+|    name     |  开户人  | varchar(24) |                              |
+|   amount    | 取款金额  |    Long     |            以分为单位             |
+|   curreny   |  币种   |   Integer   |         1人民币 2美金 3港币         |
+|  tradePwd   | 支付密码  | varchar(24) |                              |
+|    phone    |  手机   | varchar(24) |                              |
+|    phone    |  验证码  | varchar(24) |                              |
+|  phoneCode  |       |             |                              |
+|  sendTime   |  时间戳  | varchar(24) |           发送消息时间戳            |
+| validateMsg | 消息信息  | varchar(24) | 校验字段：所有字段值拼装成字符串 做加密（和消息用一套） |
+|    verNo    |  版本号  | Varchar(16) |       如果不存在，默认使用最低版本接口       |
+|    token    |  令牌值  | varchar(64) |                              |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 22)线上支付申请
+
+##### 方法名称
+
+rechargeApplication
+
+##### 方法描述
+
+线上支付申请
+
+##### 访问路径
+
+<http://ServiceAddress/user/rechargeApplication/{seqId}>
+
+##### 输入参数
+
+|     参数代码     | 参数名称 |    数据类型     |                             参数说明                             |
+| ------------ | ---- | ----------- | ------------------------------------------------------------ |
+|    userId    | 用户id | varchar(24) |                                                              |
+|   payType    | 汇款渠道 | varchar(6)  | 1： 易宝；  2： 通联 ； 3：易汇金；  4：unionpay 5：chinapay 6：95epay(目前用6) |
+| currencyType |  币种  | varchar(24) |                         1人民币 2美金 3港币                         |
+|    amount    |  金额  |   String    |                            以元为单位                             |
+|   sendTime   | 时间戳  | varchar(24) |                           发送消息时间戳                            |
+| validateMsg  | 消息信息 | varchar(24) |                 校验字段：所有字段值拼装成字符串 做加密（和消息用一套）                 |
+|    verNo     | 版本号  | Varchar(16) |                       如果不存在，默认使用最低版本接口                       |
+|    token     | 令牌值  | varchar(64) |                                                              |   |
+
+##### 输出参数
+
+|   参数代码    |     参数名称     |    数据类型     |                              参数说明                              |
+| --------- | ------------ | ----------- | -------------------------------------------------------------- |
+|  amount   | 整型数字，金额与币种有关 |   number    | 如果是人民币，则单位是分，即 10 元提交时金额应为 1000，如果是美元，单位是美分，即 10 美元提交时金额为 1000 |
+| products  |     商品名称     | Varchar（32） |                                                                |
+|   merNo   |     商户号      |   varchar   |
+| returnURL |     前台回调     |   varchar   |
+| notifyURL |     后台回调     |   varchar   |
+|  payType  |     支付类型     |   varchar   |                           默认CSPAY 支付                           |
+|  payURL   |    支付提交地址    |   varchar   |
+|  billNo   |    商户订单号     |   Varchar   |                                                                |   |
+
+##### 响应报文示例
+
+---
+
+#### 23)线上支付申请（新）
+
+##### 方法名称
+
+recharge
+
+##### 方法描述
+
+线上支付申请
+
+##### 访问路径
+
+<http://ServiceAddress/user/recharge/{seqId}>
+
+##### 输入参数
+
+|     参数代码     | 参数名称 |    数据类型     |                               参数说明                                |
+| ------------ | ---- | ----------- | ----------------------------------------------------------------- |
+|    userId    | 用户id | varchar(24) |                                                                   |
+|   payType    | 汇款渠道 | varchar(6)  | 1： 易宝；  2： 通联 ； 3：易汇金；  4：unionpay 5：chinapay (目前只启用  4：unionpay) |
+| currencyType |  币种  | varchar(24) |                           1人民币 2美金 3港币                            |
+|    amount    |  金额  |    long     |                               以分为单位                               |
+|   sendTime   | 时间戳  | varchar(24) |                              发送消息时间戳                              |
+| validateMsg  | 消息信息 | varchar(24) |                   校验字段：所有字段值拼装成字符串 做加密（和消息用一套）                    |
+|    verNo     | 版本号  | Varchar(16) |                         如果不存在，默认使用最低版本接口                          |
+|    token     | 令牌值  | varchar(64) |                                                                   |   |
+
+##### 输出参数
+
+|     参数代码      |     参数名称     |    数据类型     |                              参数说明                              |
+| ------------- | ------------ | ----------- | -------------------------------------------------------------- |
+|    orderNo    |    平台交易流水    | Varchar（32） |                                                                |
+|  orderAmount  | 整型数字，金额与币种有关 |   number    | 如果是人民币，则单位是分，即 10 元提交时金额应为 1000，如果是美元，单位是美分，即 10 美元提交时金额为 1000 |
+| orderDatetime |   订单生成的时间    | Varchar（32） |                            订单生成的时间                             |
+|  productName  |     商品名称     | Varchar（32） |                                                                |   |
+|    tradeNo    | 第三方支付平台交易流水号 | Varchar（32） |                                                                |   |
+
+##### 响应报文示例
+
+{ "header":{ "retCode":32000, "retMsg":"成功" }, "body":{ "orderNo":"201608091313350691589822653", "orderAmount":1, "orderDatetime":1470719616000, "productName":"账户充值", "tradeNo":"201608091313353055368" } }
+
+#### 24)验证信息 （3.1.1 新增输入参数 countryCode）
+
+##### 方法名称
+
+validate
+
+##### 方法描述
+
+通过调用此接口 验证用户输入的手机(包括国家码)、邮箱、昵称等是不是重复
+
+##### 访问路径
+
+<http://ServiceAddress/system/validate/{seqId}>
+
+##### 输入参数
+
+|    参数代码     | 参数名称 |    数据类型     |                                                                                                      参数说明                                                                                                       |
+| ----------- | ---- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|    token    | 令牌值  | varchar(64) |                                                                                                                                                                                                                 |
+|    verNo    | 版本号  | varchar(16) |                                                                                                如果不存在，默认使用最低版本接口                                                                                                 |
+|    phone    | 手机号码 | varchar(11) |                                                                                                                                                                                                                 |
+| countryCode | 国家码  | Varchar(60) | zh-cn 86 中国大陆,zh-hk 852 中国香港,zh-mo 853 中国澳门,zh-tw 886 中国台湾,en-au 61 澳大利亚,de-de 49 德国,fr-fr 33 法国,ko-kr 82 韩国,en-ca 1 加拿大,en-us 1 美国,en-my 60 马来西亚,ja-jp 81 日本,en-th 66 泰国,en-sg 65 新加坡,en-nz 64 新西兰,en-gb 44 英国 |
+|    email    |  邮箱  | varchar(64) |                                                                                                                                                                                                                 |
+|  nikeName   |  昵称  | varchar(20) |                                                                                                                                                                                                                 |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 25)绑定银行卡
+
+##### 方法名称
+
+addBankCard
+
+##### 方法描述
+
+通过调用此接口 绑定银行卡信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/addBankCard/{seqId}>
+
+##### 输入参数
+
+|      参数代码      |  参数名称   |     数据类型     |             参数说明              |
+| -------------- | ------- | ------------ | ----------------------------- |
+|     token      |   令牌值   | varchar(64)  |                               |
+|     verNo      |   版本号   | varchar(16)  |       如果不存在，默认使用最低版本接口        |
+|     userId     |  用户id   | varchar(24)  |                               |
+|     bankId     |  银行卡id  | varchar(24)  | 如果新绑定的银行卡该值未空，如果修改的银行卡存在银行卡ID |
+|    bankType    |  银行类型   | varchar(64)  |        例如：BOC-NET-B2C         |
+|  bankCardNum   |  银行卡号   | varchar(50)  |                               |
+|  cardProvice   | 银行卡所属省  | varchar(32)  |           例如：150000           |
+|    cardCity    | 银行卡所属市  | varchar(32)  |           例如：150100           |
+| cardBankDetail | 银行卡支行名称 | varchar(128) |     例如：中国银行股份有限公司和林格尔县支行      |
+|      name      |   开户人   | varchar(20)  |                               |
+|   bankPhone    | 银行预留手机号 | varchar(11)  |                               |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 26) 取消绑定银行卡
+
+##### 方法名称
+
+delBankCard
+
+##### 方法描述
+
+通过调用此接口 绑定银行卡信息。
+
+##### 访问路径
+
+<http://ServiceAddress/user/delBankCard/{seqId}>
+
+##### 输入参数
+
+|  参数代码  |  参数名称  |    数据类型     |       参数说明       |
+| ------ | ------ | ----------- | ---------------- |
+| token  |  令牌值   | varchar(64) |                  |
+| verNo  |  版本号   | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| cardId | 银行卡号id | varchar(10) |                  |
+| userId |  用户id  | varchar(32) |                  |   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 27) 获取支行信息
+
+##### 方法名称
+
+getSubBranchDetail
+
+##### 方法描述
+
+通过调用此接口 绑定银行卡信息。
+
+##### 访问路径
+
+<http://ServiceAddress/user/getSubBranchDetail/{seqId}>
+
+##### 输入参数
+
+|    参数代码     |  参数名称  |    数据类型     |       参数说明       |
+| ----------- | ------ | ----------- | ---------------- |
+|    token    |  令牌值   | varchar(64) |                  |
+|    verNo    |  版本号   | varchar(16) | 如果不存在，默认使用最低版本接口 |
+|  bankType   |  银行类型  | varchar(64) |  例如：BOC-NET-B2C  |
+| cardProvice | 银行卡所属省 | varchar(32) |    例如：150000     |
+|  cardCity   | 银行卡所属市 | varchar(32) |    例如：150100     |
+
+##### 输出参数
+
+|           参数代码            |   参数名称   | 数据类型 | 参数说明 |
+| ------------------------- | -------- | ---- | ---- |
+|      bankDetailList       | 用户等级列表开始 |      |      |
+| bankDetailList.bankDetail |   段位金额   | Long |      |
+|      bankDetailList       | 用户等级列表结束 |      |      |   |
+
+##### 响应报文示例
+
+---
+
+#### 28) 线下支付申请
+
+##### 方法名称
+
+offlineApply
+
+##### 方法描述
+
+通过调用此接口 提交服务端 线下支付详细信息。
+
+##### 访问路径
+
+<http://ServiceAddress/user/offlineApply/{seqId}>
+
+##### 输入参数
+
+|      参数代码       |  参数名称  |     数据类型     |       参数说明       |
+| --------------- | ------ | ------------ | ---------------- |
+|      token      |  令牌值   | varchar(64)  |                  |
+|      verNo      |  版本号   | varchar(16)  | 如果不存在，默认使用最低版本接口 |
+|     userId      |  用户id  | varchar(16)  |                  |
+| chargeRealName  | 充值真实姓名 | varchar(32)  |    例如：150100     |
+|     amount      |  充值金额  | integer(32)  |      以分为单位       |
+|     payType     |  充值渠道  |  integer(4)  |   1 银行  2 第三方    |
+|    bankType     |  银行类型  | varchar (32) |  例如：BOC-NET-B2C  |
+|   bankCardNo    |  银行卡号  | varchar (32) |                  |
+|    otherName    | 第三方名称  | varchar(32)  |      第三方名称       |
+| bankCardNoOther | 第三方帐号  | varchar(32)  |      第三方帐号       |
+|     remark      |   备注   | varchar(128) |                  |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 29) 获取分享规则列表
+
+##### 方法名称
+
+getShareList
+
+##### 方法描述
+
+通过此接口 获取分享规则列表。
+
+##### 访问路径
+
+<http://ServiceAddress/system/getShareList/{seqId}>
+
+##### 输入参数
+
+| 参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ----- | ---- | ----------- | ---------------- |
+| verNo | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+
+##### 输出参数
+
+|        参数代码         |   参数名称   |     数据类型      |             参数说明              |
+| ------------------- | -------- | ------------- | ----------------------------- |
+|      shareList      | 分享规则列表开始 |     Array     |            返回列表对象             |
+|    shareList.id     |   记录ID   |      Int      |                               |
+|    shareList.src    |   分享来源   |      Int      |          1-活动；2-产品；等          |
+|   shareList.tagId   |   目标ID   |      int      | 若src=1，则对应活动ID；若src=2，则对应产品ID |
+| shareList.beginTime |  开始有效期   |     date      |                               |
+|  shareList.endTime  |  结束有效期   |     date      |                               |
+|  shareList.status   |    状态    |      int      |        1-有效；2-禁用；3-删除         |
+|   shareList.title   |   分享标题   | varchar(256)  |                               |
+| shareList.logoType  |   图标类型   |      int      |       1-APP自带图标；2-网络图片        |
+|  shareList.logoUrl  |  图标Url   | varchar(256)  |        图标：http网络图片Url         |
+|  shareList.content  |   分享内容   | varchar(1024) |                               |
+| shareList.shareUrl  |  跳转Url   | varchar(256)  |          分享后点击跳转的Url          |
+|      shareList      | 用户等级列表结束 |
+
+##### 响应报文示例
+
+---
+
+#### 30) 添加分享记录
+
+##### 方法名称
+
+addShareRecord
+
+##### 方法描述
+
+向服务器添加分享操作记录。
+
+##### 访问路径
+
+<http://ServiceAddress/system/addShareRecord/{seqId}>
+
+##### 输入参数
+
+|   参数代码   |  参数名称  |    数据类型     |                              参数说明                              |
+| -------- | ------ | ----------- | -------------------------------------------------------------- |
+| shareId  | 分享规则ID |     int     |                      对应getShareList中的ID字段                      |
+| platform |  平台类型  |             |                       1-Android；2-iOS；等                        |
+| channel  |  分享渠道  |             |                     1-微信；2-朋友圈；3-微博；4-QQ；等                     |
+|  srcId   | 分享者ID  |             | 若platform=1 or 2，则对应客户端UserID；若用户没有登录，则为0；若platform为其他值，则暂时定为0 |
+|  verNo   |  版本号   | varchar(16) |                        如果不存在，默认使用最低版本接口                        |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|  -   |  -   |  -   |  -   |
+
+##### 响应报文示例
+
+---
+
+#### 31) 客户端启动检测
+
+##### 方法名称
+
+startupCheck
+
+##### 方法描述
+
+获取版本信息。
+
+##### 访问路径
+
+<http://ServiceAddress/system/startupCheck/{seqId}>
+
+##### 输入参数
+
+|   参数代码   |   参数名称    |  数据类型   |                参数说明                 |
+| -------- | --------- | ------- | ----------------------------------- |
+| platform |   平台类型    | Integer |           1-iOS；2-Android           |
+| version  |   版本编号    | Integer | iOS：自定义Code     Android：VersionCode |
+| channel  |   渠道编号    | Integer |         非必填字段  默认为99999官方渠道         |
+|  lastId  | 最后显示 公告编号 | Integer |             非必填字段 默认为0              |
+
+##### 输出参数
+
+|       参数代码        |  参数名称   |     数据类型     |           参数说明            |
+| ----------------- | ------- | ------------ | ------------------------- |
+|      retCode      |   返回码   |   Integer    |            返回码            |
+|      retMsg       |  返回消息   | Varchar(256) |           返回描述            |
+|    updateInfo     |  升级信息   |    Object    |  iOS：nullAndroid：同获取版本信息  |
+|    lastNotify     |  弹窗公告   |    Object    | 返回符合平台和版本条件的最新公告，否则返回null |
+| remoteVersionName | 服务端版本名称 | Varchar(24)  |                           |
+| remoteVersionCode | 服务端版本号  |   Integer    |                           |
+|    description    |  版本描述   |              |                           |
+|    downloadUrl    | 版本下载地址  |              |      指向最新安装文件的http地址      |
+|        md5        |   校验值   |              |      该版本安装文件的MD5校验值       |
+|    updateType     |  升级方式   |   Integer    |       1、增量升级2、全新升级        |
+|   isMustUpdate    | 是否必须升级  |   Boolean    |                           |
+|        id         |   编号    |   Integer    |                           |
+|       title       |  公告标题   | varchar(50)  |                           |
+|      summary      |  弹窗摘要   | varchar(400) |                           |
+|      content      |  公告正文   |     text     |                           |
+|       isPop       |  是否弹窗   |   Integer    |         1-弹出；0-不弹         |
+|   platformType    |  平台类型   |   Integer    |                           |
+|    versionCode    |  版本编码   |   Integer    |                           |
+|    limitBegin     | 有效起始时间  |    string    |    yyyy-MM-dd HH:mm:ss    |
+|     limitEnd      | 有效结束时间  |    string    |    yyyy-MM-dd HH:mm:ss    |
+|       level       |   优先级   |   Integer    |         0-最低；9-最高         |
+|      status       |   状态    |   Integer    |      0-隐藏；1-显示；-1-删除      |
+|    createTime     |  发布时间   |    string    |    yyyy-MM-dd HH:mm:ss    |
+|    updateTime     |  更新时间   |    string    |    yyyy-MM-dd HH:mm:ss    |
+|      reserve      |   备用    | varchar(100) |                           |   |
+
+##### 响应报文示例
+
+---
+
+#### 32) 获取手机公告列表
+
+##### 方法名称
+
+getNotifyList
+
+##### 方法描述
+
+获取手机端公告列表。
+
+##### 访问路径
+
+<http://ServiceAddress/system/getNotifyList/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |  数据类型   |      参数说明       |
+| --------- | ------ | ------- | --------------- |
+| platform  |  平台类型  | Integer | 1-iOS；2-Android |
+| pageIndex | 数据起始页  | Integer |     起始页从1开始     |
+| pageSize  | 每页数据大小 | Integer |    每页包含数据条数     |
+
+##### 输出参数
+
+|          参数代码           |      参数名称      |     数据类型     |        参数说明         |
+| ----------------------- | -------------- | ------------ | ------------------- |
+|         retCode         |      返回码       |   Integer    |         返回码         |
+|         retMsg          |      返回消息      | varchar(256) |        返回描述         |
+|       notifyList        |      公告列表      |     List     |       公告列表集合        |
+|          total          |      总条数       |   Integer    |      所有符合条件的公告      |
+|       notifyList        | notifyList列表开始 |              |                     |
+|      notifyList.id      |       编号       |   Integer    |                     |
+|    notifyList.title     |      公告标题      | varchar(50)  |                     |
+|   notifyList.summary    |      弹窗摘要      | varchar(400) |                     |
+|   notifyList.content    |      公告正文      |     text     |                     |
+|    notifyList.isPop     |      是否弹窗      |   Integer    |      1-弹出；0-不弹      |
+| notifyList.platformType |      平台类型      |   Integer    |                     |
+| notifyList.versionCode  |      版本编码      |   Integer    |                     |
+|  notifyList.limitBegin  |     有效起始时间     |    string    | yyyy-MM-dd HH:mm:ss |
+|   notifyList.limitEnd   |     有效结束时间     |    string    | yyyy-MM-dd HH:mm:ss |
+|    notifyList.level     |      优先级       |   Integer    |      0-最低；9-最高      |
+|    notifyList.status    |       状态       |   Integer    |   0-隐藏；1-显示；-1-删除   |
+|  notifyList.createTime  |      发布时间      |    string    | yyyy-MM-dd HH:mm:ss |
+|  notifyList.updateTime  |      更新时间      |    string    | yyyy-MM-dd HH:mm:ss |
+|   notifyList.reserve    |       备用       | varchar(100) |                     |
+|    userGradeInfoList    | notifyList列表结束 |              |                     |   |
+
+##### 响应报文示例
+
+---
+
+#### 33) 发送HELLO包
+
+##### 方法名称
+
+hello
+
+##### 方法描述
+
+向服务器发送HELLO包，以测试到服务器网络连接是否畅通。
+
+##### 访问路径
+
+<http://ServiceAddress/test/hello/{seqId}>
+
+##### 输入参数
+
+| 参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ----- | ---- | ----------- | ---------------- |
+| token | 令牌值  | varchar(64) |                  |
+| verNo | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+
+##### 输出参数
+
+|    参数代码    | 参数名称  |     数据类型     |        参数说明        |
+| ---------- | ----- | ------------ | ------------------ |
+|  retCode   |  返回码  |   Integer    |        返回码         |
+|   retMsg   | 返回消息  | varchar(256) |        返回描述        |
+| serverTime | 服务器时间 |   DateTime   | 返回服务器当前的北京时间，精确到毫秒 |
+
+##### 响应报文示例
+
+#### 34)策略详情-策略总览（3.0.1新增接口）
+
+##### 方法名称
+
+strategyDetail
+
+##### 方法描述
+
+获取策略总览标签页信息。
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/strategyDetail/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称 |    数据类型     |       参数说明       |
+| ---------- | ---- | ----------- | ---------------- |
+| strategyId | 策略ID |   Integer   |                  |
+|   userId   | 用户ID |   Integer   |       非必录项       |
+|   verNo    | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+
+##### 输出参数
+
+|             参数代码              |       参数名称       |     数据类型      |      参数说明      |
+| ----------------------------- | ---------------- | ------------- | -------------- |
+|              id               |       策略ID       |      int      |                |
+|             name              |       策略名称       |    String     |                |
+|            caption            |       策略说明       | varchar(1024) |                |
+|          profitRate           |      当前收益率       |    double     |                |
+|           provider            |       领投人        |    String     |                |
+|            feeRate            |       策略费率       |    double     |                |
+|          followMoney          |       跟投总额       |    double     |                |
+|      providerFollowMoney      |      领投人资金       |    double     |                |
+|         accountEquity         |       当前净值       |    double     |                |
+|          maxDrawdown          |       最大回撤       |    double     |                |
+|         profitRate7d          |      近7天盈利率      |    double     |                |
+|         profitRate30d         |     近30天盈利率      |    double     |                |
+|          publicDays           |       公开时间       |      int      |                |
+|      followNumberActive       |       跟投人数       |      int      |                |
+|       followNumberTotal       |      累计跟投人数      |      int      |                |
+|            follow             |      是否允许跟投      |      int      | 1:可以跟投 0：不可以跟投 |
+|         earningsList          | earningsList列表开始 |
+|    earningsList.createTime    |      更新净值日期      |    String     |                |
+|    earningsList.unitEquity    |   当日单位净值（USD）    |    double     |                |
+| earningsList.totalFollowMoney |  当日跟投资金总量（CHN）   |    double     |                |
+|         earningsList          | earningsList列表结束 |
+
+##### 响应报文示例
+
+---
+
+#### 35) 我的跟投-修改止盈止损（3.0.1新增接口）
+
+##### 方法名称
+
+resetTpSl
+
+##### 方法描述
+
+修改跟投记录的止盈止损
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/resetTpSl/{seqId}>
+
+##### 输入参数
+
+|       参数代码       |  参数名称  |    数据类型     |       参数说明       |
+| ---------------- | ------ | ----------- | ---------------- |
+|      token       |  令牌号   | varchar(16) |                  |
+|      userId      |  用户ID  |   String    |                  |
+|      verNo       |  版本号   | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| strategyFollowId | 跟投主键ID |   String    |                  |
+|        tp        |   止盈   |   String    |                  |
+|        sl        |   止损   |   String    |                  |   |
+
+##### 输出参数
+
+|  参数代码   | 参数名称 |     数据类型     | 参数说明 |
+| ------- | ---- | ------------ | ---- |
+| retCode | 返回码  |   Integer    | 返回码  |
+| retMsg  | 返回消息 | varchar(256) | 返回描述 |
+
+##### 响应报文示例
+
+---
+
+#### 36) 个人信息-获取用户盈亏（3.0.1新增接口）
+
+##### 方法名称
+
+userProfitAndLoss
+
+##### 方法描述
+
+获取策略总览标签页信息。
+
+##### 访问路径
+
+<http://ServiceAddress/user/userProfitAndLoss/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |    数据类型     |       参数说明       |
+| ------ | ---- | ----------- | ---------------- |
+| token  | 令牌号  | varchar(16) |                  |
+| userId | 用户ID |   Integer   |       非必录项       |
+| verNo  | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+
+##### 输出参数
+
+|         参数代码         |  参数名称  |     数据类型     | 参数说明 |
+| -------------------- | ------ | ------------ | ---- |
+|       retCode        |  返回码   |   Integer    | 返回码  |
+|        retMsg        |  返回消息  | varchar(256) | 返回描述 |
+|  currProfitAndLoss   |  当前盈亏  |     Long     |      |
+| currNetProfitAndLoss | 当前净盈亏  |     Long     |      |
+|     totalAmount      | 账户资产总额 |     Long     |      |   |
+
+##### 响应报文示例
+
+---
+
+#### 37)查询我的跟投策略的交易记录（3.0.1新增接口）
+
+##### 方法名称
+
+getMyFollowStrategyTradeList
+
+##### 方法描述
+
+查询我的跟投策略的交易记录
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/getMyFollowStrategyTradeList/{seqId}>
+
+##### 输入参数
+
+|       参数代码       |  参数名称  |    数据类型     |   参数说明   |
+| ---------------- | ------ | ----------- | -------- |
+|      token       |  令牌号   | varchar(16) |          |
+|       type       |   类型   |   Integer   | 1：当前2：历史 |
+| strategyFollowId | 策略跟投ID |   Integer   |  策略的ID   |
+|    pageIndex     |   页号   |   Integer   |          |
+|     pageSize     |  每页条数  |   Integer   |          |   |
+
+##### 输出参数
+
+|           参数代码            |      参数名称       |  数据类型   |        参数说明        |
+| ------------------------- | --------------- | ------- | ------------------ |
+|      totalMyStrategy      |      总记录数       | Integer |                    |
+|         tradeList         | tradeList交易记录开始 |
+|       tradeList.sl        |       止损        | varchar |                    |
+|     tradeList.profit      |      盈亏金额       | varchar |                    |
+|      tradeList.lots       |      交易手数       | varchar |                    |
+|     tradeList.symbol      |      交易品种       | varchar |                    |
+|    tradeList.orderType    |      订单类型       | varchar | 订单类型：0-buy；1-sell； |
+|       tradeList.tp        |       止盈        | varchar |                    |
+| tradeList.agentCommission |      代理商提成      | varchar |                    |
+|   tradeList.openTime_t    |    开仓时间（时分秒）    | varchar |                    |
+|    tradeList.openTime     |      开场时间       |  date   |                    |
+|         openPrice         |      开仓价格       | varchar |                    |
+|   tradeList.closeTime_d   |    平仓时间（年月日）    | varchar |                    |
+|   tradeList.closePrice    |      平仓价格       | varchar |                    |
+|    tradeList.closeTime    |      平仓时间       |  Date   |                    |
+|           swap            |       利息        | varchar |                    |
+|   tradeList.openTime_d    |    开仓时间（年月日）    | varchar |                    |
+|     tradeList.comment     |       注释        | varchar |                    |
+|   tradeList.commission    |       提成        | varchar |                    |
+|     tradeList.orderId     |      订单ID       | varchar |                    |
+|   tradeList.closeTime_t   |    平仓时间（时分秒）    | varchar |                    |
+|         tradeList         |  tradeList列表结束  |
+
+##### 响应报文示例
+
+---
+
+#### 38)跟投（3.0.1新增接口）
+
+##### 方法名称
+
+confirmFollow
+
+##### 方法描述
+
+跟投
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/confirmFollow/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称 |    数据类型     | 参数说明  |
+| ---------- | ---- | ----------- | ----- |
+|   token    | 令牌号  | varchar(16) |       |
+| strategyId | 策略ID |   Integer   | 策略的ID |
+|     tp     | 止盈比例 |   Varchar   |       |
+|     sl     | 止损比例 |   Varchar   |       |
+| joinAmount | 跟投金额 |   Varchar   |       |
+|  tradePwd  | 支付密码 |   Varchar   |       |   |
+
+##### 响应报文示例
+
+---
+
+#### 39) 查询我的跟投列表（3.0.1新增接口）
+
+##### 方法名称
+
+getMyFollowStrategyList
+
+##### 方法描述
+
+查询我的跟投列表
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/getMyFollowStrategyList/{seqId}>
+
+##### 输入参数
+
+|   参数代码    | 参数名称 |    数据类型     |   参数说明   |
+| --------- | ---- | ----------- | -------- |
+|   token   | 令牌号  | varchar(16) |          |
+|   type    |  类型  |   Integer   | 1：当前2：历史 |
+| pageIndex |  页号  |   Integer   |          |
+| pageSize  | 每页条数 |   Integer   |          |   |
+
+##### 输出参数
+
+|             参数代码             |       参数名称       |    数据类型     |                         参数说明                         |
+| ---------------------------- | ---------------- | ----------- | ---------------------------------------------------- |
+|       totalMyStrategy        |       总记录数       |   Integer   |                                                      |
+|             当前记录             |                  |             |                                                      |
+|         strategyList         | strategyList记录开始 |
+|       strategyList.id        |       跟投ID       |   Integer   |                                                      |
+|  strategyList.accountSlave   |      MT4账户       |   varchar   |                                                      |
+|     strategyList.status      |        状态        |   Integer   | /** 跟投状态状态：1-已跟投未入金；2-已跟投；3-已撤投； 4-撤投处理中 ；5-跟投失败 **/ |
+|   strategyList.investment    |      累计投资金额      |   Double    |                                                      |
+|    strategyList.accountTp    |       止盈比例       |   Double    |                                                      |
+| strategyList.firstFollowTime |      首次投入时间      |    Date     |                                                      |
+|    strategyList.accountSl    |       止损比例       |   Double    |                          比例                          |
+| strategyList.lastFollowTime  |      最后投入时间      |    Date     |                                                      |
+|         strategyName         |       策略名称       |   varchar   |                                                      |
+|   strategyList.strategyId    |       策略ID       |   Integer   |                                                      |
+|          liveEquity          |        净值        |   Double    |                                                      |
+|  strategyList.earningsRate   |       收益率        |   Double    |                                                      |
+| strategyList.totalFollowDays |       跟投天数       |   Integer   |                                                      |
+|              历史              |                  |             |                                                      |
+|       strategyList.id        |       跟投ID       |   Integer   |                                                      |
+| strategyList.lastFollowTime  |      最后投入时间      |    date     |                                                      |
+|   strategyList.investment    |      累计投资金额      |    date     |                                                      |
+|   strategyList.lastEquity    |       最后净值       |   double    |                                                      |
+|    strategyList.exitTime     |       撤投时间       |    date     |                                                      |
+|   strategyList.exitReason    |       撤投原因       |   Integer   |     撤投原因：0-未撤投；1-策略关闭；2-达到止盈撤投；3-达到止损撤投；4-主动撤投；      |
+|  strategyList.strategyName   |       策略名称       | Varchar(60) |                                                      |
+|   strategyList.strategyId    |       策略ID       |   Integer   |                                                      |
+|    strategyList.earnings     |        收益        |   Double    |                                                      |
+|  strategyList.earningsRate   |       收益率        |   Double    |                                                      |
+|          tradeList           |  tradeList列表结束   |
+
+##### 响应报文示例
+
+---
+
+#### 40) 查询所有开放的策略（3.0.1新增接口）
+
+##### 方法名称
+
+getStrategyList
+
+##### 方法描述
+
+查询所有开放的策略
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/getStrategyList/{seqId}>
+
+##### 输入参数
+
+|   参数代码    | 参数名称 |  数据类型   | 参数说明 |
+| --------- | ---- | ------- | ---- |
+|  userId   | 用户Id | Integer |      |
+| pageIndex |  页号  | Integer |      |
+| pageSize  | 每页条数 | Integer |      |   |
+
+##### 输出参数
+
+|                    参数代码                    |        参数名称        |  数据类型   |    参数说明    |
+| ------------------------------------------ | ------------------ | ------- | ---------- |
+|              totalMyStrategy               |        总记录数        | Integer |            |
+|                strategyList                | strategyList策略记录开始 |
+|          strategyList.strategyId           |        策略ID        | Integer |            |
+|         strategyList.strategyName          |        策略名称        | Varchar |            |
+|      strategyList.followNumberActive       |       当前跟投人数       | Integer |            |
+|       strategyList.followNumberTotal       |       累计跟投人数       | Integer |            |
+|          strategyList.profitRate           |        收益率         | Double  |            |
+|          strategyList.maxDrawDown          |        最大回撤        | Double  |            |
+|          strategyList.publicDays           |      公开周期（天）       | Integer |            |
+|          strategyList.followMoney          |        跟投总额        | Double  |            |
+|      strategyList.providerFollowMoney      |       管理人资金        | Double  |            |
+|           strategyList.nickname            |      策略管理人昵称       | Varchar |            |
+|     strategyList.provider_deduct_rate      |     策略提供者提成比例      | Double  |            |
+|     strategyList.platform_deduct_rate      |       平台提成比例       | Double  |            |
+|        strategyList.maxFollowCount         |     允许跟投的最大人数      | Double  |            |
+|            strategyList.follow             |       是否可以跟投       | Integer | 1：可以 0：不可以 |
+|         strategyList.earningsList          |       净值List       |  List   |            |
+|    strategyList.earningsList.unitEquity    |    当日单位净值（USD）     | double  |            |
+|    strategyList.earningsList.createTime    |       更新净值日期       | varchar |            |
+| strategyList.earningsList.totalFollowMoney |   当日跟投资金总量（CHN）    | double  |            |
+
+##### 响应报文示例
+
+---
+
+#### 41) 查询策略的交易记录（3.0.1新增接口）
+
+##### 方法名称
+
+getStrategyTradeList
+
+##### 方法描述
+
+查询我的跟投策略的交易记录
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/getStrategyTradeList/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称 |    数据类型     |   参数说明   |
+| ---------- | ---- | ----------- | -------- |
+|   token    | 令牌号  | varchar(16) |          |
+|    type    |  类型  |   Integer   | 1：当前2：历史 |
+| strategyId | 策略ID |   Integer   |  策略的ID   |
+| pageIndex  |  页号  |   Integer   |          |
+|  pageSize  | 每页条数 |   Integer   |          |   |
+
+##### 输出参数
+
+|           参数代码            |      参数名称       |  数据类型   |        参数说明        |
+| ------------------------- | --------------- | ------- | ------------------ |
+|      totalMyStrategy      |      总记录数       | Integer |                    |
+|         tradeList         | tradeList交易记录开始 |
+|       tradeList.sl        |       止损        | varchar |                    |
+|     tradeList.profit      |      盈亏金额       | varchar |                    |
+|      tradeList.lots       |      交易手数       | varchar |                    |
+|     tradeList.symbol      |      交易品种       | varchar |                    |
+|    tradeList.orderType    |      订单类型       | varchar | 订单类型：0-buy；1-sell； |
+|       tradeList.tp        |       止盈        | varchar |                    |
+| tradeList.agentCommission |      代理商提成      | varchar |                    |
+|   tradeList.openTime_t    |    开仓时间（时分秒）    | varchar |                    |
+|    tradeList.openTime     |      开场时间       |  date   |                    |
+|    tradeList.openPrice    |      开仓价格       | varchar |                    |
+|   tradeList.closeTime_d   |    平仓时间（年月日）    | varchar |                    |
+|   tradeList.closePrice    |      平仓价格       | varchar |                    |
+|    tradeList.closeTime    |      平仓时间       |  Date   |                    |
+|      tradeList.swap       |       利息        | varchar |                    |
+|   tradeList.openTime_d    |    开仓时间（年月日）    | varchar |                    |
+|     tradeList.comment     |       注释        | varchar |                    |
+|   tradeList.commission    |       提成        | varchar |                    |
+|     tradeList.orderId     |      订单ID       | varchar |                    |
+|   tradeList.closeTime_t   |    平仓时间（时分秒）    | varchar |                    |
+|  tradeList.isMasterOrder  |   是否master订单    | Integer |      1：是；0：否       |
+|         tradeList         |  tradeList列表结束  |
+
+##### 响应报文示例
+
+#### 42) 撤投（3.0.1新增接口）
+
+##### 方法名称
+
+revokeFollow
+
+##### 方法描述
+
+手机端用户主动撤投跟投策略调用
+
+##### 访问路径
+
+<http://ServiceAddress/strategy/revokeFollow/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称 |    数据类型     |       参数说明       |
+| ---------- | ---- | ----------- | ---------------- |
+|   token    | 令牌号  | varchar(64) |                  |
+|   verNo    | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+| strategyId | 策略ID |   Integer   |      策略的ID       |
+
+##### 输出参数
+
+|     参数代码     | 参数名称 | 数据类型 | 参数说明  |
+| ------------ | ---- | ---- | ----- |
+|  principal   |  本金  | Long | 以分为单位 |
+| profitOrLoss | 盈亏金额 | Long | 以分为单位 |
+
+##### 响应报文示例
+
+---
+
+#### 43) 查询我的入伙记录(操作中、已清盘使用)
+
+##### 方法名称
+
+myTradeDetailList
+
+##### 方法描述
+
+查询我的入伙记录(操作中、已清盘使用) 多次入伙一支产品，入伙记录不合并(默认按入伙时间倒序排列)
+
+##### 访问路径
+
+<http://ServiceAddress/fund/myTradeDetailList/{seqId}>
+
+##### 输入参数
+
+|   参数代码    | 参数名称 |    数据类型     |    参数说明    |
+| --------- | ---- | ----------- | ---------- |
+|   token   | 令牌号  | varchar(16) |            |
+|  status   |  状态  |   Integer   | 3：操作中4：已清盘 |
+|  fundId   | 产品ID |   Integer   |   产品的ID    |
+| pageIndex |  页号  |   Integer   |            |
+| pageSize  | 每页条数 |   Integer   |            |   |
+
+##### 输出参数
+
+|             参数代码              |      参数名称       |  数据类型   | 参数说明 |
+| ----------------------------- | --------------- | ------- | ---- |
+|       totalTradeDetail        |      总记录数       | Integer |      |
+|        tradeDetailList        | tradeList交易记录开始 |
+| tradeDetailList.tradeDetailId |     入伙记录Id      | Integer |      |
+|  tradeDetailList.productType  |      产品类型       | Integer |      |
+|    tradeDetailList.amount     |      入伙总金额      |  Long   |      |
+| tradeDetailList.amountBalance |     本金入伙金额      |  Long   |      |
+|  tradeDetailList.mammonCoin   |     大象币入伙金额     |  Long   |      |
+|   tradeDetailList.tradeTime   |      入伙时间       |  Long   |      |
+|  tradeDetailList.fiexdIncome  |      固定收益       |  Long   |      |
+|  tradeDetailList.floatIncome  |      浮动收益       |  Long   |      |
+|        tradeDetailList        |  tradeList列表结束  |
+
+##### 响应报文示例
+
+#### 48) 提交风险测评题目
+
+##### 方法名称
+
+saveUserRiskRecord
+
+##### 方法描述
+
+提交风险测评题目
+
+##### 访问路径
+
+<http://ServiceAddress/user/saveUserRiskRecord/{seqId}>
+
+##### 输入参数
+
+|     参数代码      | 参数名称  |    数据类型     | 参数说明 |
+| ------------- | ----- | ----------- | ---- |
+|     token     |  令牌号  | varchar(16) |      |
+| answerIdArray | 答案的ID |   varchar   |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例
+
+#### 49) 实名认证提交
+
+##### 方法名称
+
+uploadIDCard
+
+##### 方法描述
+
+实名认证提交
+
+##### 访问路径
+
+<http://ServiceAddress/user/uploadIDCard/{seqId}>
+
+##### 输入参数
+
+|   参数代码   | 参数名称 |  数据类型   |                参数说明                |
+| -------- | ---- | ------- | ---------------------------------- |
+|  token   | 令牌号  | varchar |                                    |
+|  idType  | 证件类型 | varchar |     1: 身份证 2: 护照 3：港澳居民来往内地通行证     |
+|  idCard  | 证件号码 | varchar |                                    |
+| userName | 用户姓名 | varchar |                                    |
+|   pic    | 证件图片 | varchar | 图片流APP端需要经过BASE64加密，服务端会进行BASE64解密 |
+| country  |  国家  | varchar |                                    |
+| busiType | 业务类型 | varchar |        1- 普通表单录入，2-OCR实名认证         |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例
+
+#### 50) 获取实名认证信息
+
+##### 方法名称
+
+getIdCardInfo
+
+##### 方法描述
+
+获取实名认证信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/getIdCardInfo/{seqId}>
+
+##### 输入参数
+
+| 参数代码  | 参数名称 |  数据类型   | 参数说明 |
+| ----- | ---- | ------- | ---- |
+| token | 令牌号  | varchar |      |
+
+##### 输出参数
+
+|        参数代码         |       参数名称        |  数据类型   |              参数说明               |
+| ------------------- | ----------------- | ------- | ------------------------------- |
+|   identityCountry   |       证件国家        |         |
+| identityCountryName |     证件国家中文描述      |         |
+|    identityType     |       证件类型        |         |   1: 身份证 2: 护照 3：港澳居民来往内地通行证    |
+|    identityAuth     |       认证结果        |         |       1认证 0未认证 2审核中 9审核失败       |
+|   identityCardNum   |        证件号        |         |                s                |
+|         pic         |        图片         | varchar | app端需进行base64解密，得到byte[]再进行图片展示 |
+|      realName       |       真实姓名        | varchar |                                 |
+|     liveChannel     | 活体认证渠道（1-海鑫，2-旷视） | varchar |                                 |
+
+#### 51) 活体认证审核
+
+##### 方法名称
+
+liveCertification
+
+##### 方法描述
+
+获取实名认证信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/liveCertification/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |        参数名称         |  数据类型   |                 参数说明                 |
+| --------- | ------------------- | ------- | ------------------------------------ |
+|   token   |         令牌号         | varchar |
+| imageBest | 活体扫描图片（旷视清晰图、或海鑫图片） | varchar |  图片流APP端需要经过BASE64加密，服务端会进行BASE64解密  |
+| imageEnv  |    （旷视模糊图，海鑫为空）     | varchar |  图片流APP端需要经过BASE64加密，服务端会进行BASE64解密  |
+|   delta   |    旷视delta，海鑫可为空    | varchar |               旷视delta                |
+| busiType  |        业务标识         | varchar | 1-激活发起人、2-激活资管人、3-其他，业务标识可以通过扫描二维码获取 |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例
+
+{ "header": { "retCode": 283001, "retMsg": "活体认证成功" } }
+
+#### 52) 是否大象国际支持的银行卡
+
+##### 方法名称
+
+getBankSupport
+
+##### 方法描述
+
+获取实名认证信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/getBankSupport/{seqId}>
+
+##### 输入参数
+
+|     参数代码     |        参数名称         |     数据类型     | 参数说明 |
+| ------------ | ------------------- | ------------ | ---- |
+|    token     |         令牌号         |   varchar    |
+| bankFullName | 银行全称（易道博识OCR接口扫描返回） | varchar(255) |      |
+
+##### 输出参数
+
+|   参数代码   |  参数名称  |    数据类型     | 参数说明 |
+| -------- | ------ | ----------- | ---- |
+| bankCode | 银行code | varchar(64) | ---- |
+| bankName |  银行简称  | varchar(64) | ---- |
+
+##### 响应报文示例
+
+{ "header":{ "retCode":0, "retMsg":"成功" }, "body":{ "bankCode":"BOCO-NET-B2C", "bankName":"交通银行" } }
+
+{ "header":{ "retCode":30002, "retMsg":"不支持该银行卡" }, "body": null  }
+
+---
+
+#### 53) 获取充值渠道
+
+##### 方法名称
+
+queryBankChannel
+
+##### 方法描述
+
+获取充值渠道
+
+##### 访问路径
+
+<http://ServiceAddress/user/queryBankChannel/{seqId}>
+
+##### 输入参数
+
+| 参数代码  | 参数名称 |  数据类型   | 参数说明 |
+| ----- | ---- | ------- | ---- |
+| token | 令牌号  | varchar |
+
+##### 输出参数
+
+|      参数代码       |                                    参数名称                                     |     数据类型     | 参数说明 |
+| --------------- | --------------------------------------------------------------------------- | ------------ | ---- |
+| bankChannleList |                                     集合                                      |     list     |      |
+|      name       |                                   银行渠道名称                                    |   varchar    |      |
+|    bank_code    | 第三方渠道编码（1-易宝、2-通联、3-易汇金、4-unionpay、5-chinapay、6-双乾、8-合众支付、9-合众快捷支付、99-转账汇款） | varchar(255) |      |
+|    busi_type    |                             业务标识（1-APP端，2-WEB端）                             |   varchar    |      |
+|      level      |                               优先级（数值越，大优先级越高）                               |   varchar    |      |
+|      valid      |                               是否有效（0-无效，1-有效）                               |   varchar    |      |
+|    max_money    |                                最大金额上限（单位：元）                                 |   varchar    |      |
+|   input_time    |                                    入库时间                                     |   varchar    |      |
+|   update_time   |                                    更改时间                                     |   varchar    |      |
+
+##### 响应报文示例
+
+{ "body": { "bankChannleList": [                                                                                                                                                                                                    
+            {                                                                                                                                                                                                    
+                "bankCode": "7",                                                                                                                                                                                                    
+                "busiType": 1,                                                                                                                                                                                                    
+                "id": 1,                                                                                                                                                                                                    
+                "inputTime": "2017-10-18 14:39:11",                                                                                                                                                                                                    
+                "level": 100,                                                                                                                                                                                                    
+                "maxMoney": 20000,                                                                                                                                                                                                    
+                "name": "合众支付",                                                                                                                                                                                                    
+                "updateTime": "2017-10-18 14:39:13",                                                                                                                                                                                                    
+                "valid": 1                                                                                                                                                                                                    
+            },                                                                                                                                                                                                    
+            {                                                                                                                                                                                                    
+                "bankCode": "4",                                                                                                                                                                                                    
+                "busiType": 1,                                                                                                                                                                                                    
+                "id": 2,                                                                                                                                                                                                    
+                "inputTime": "2017-10-18 14:39:40",                                                                                                                                                                                                    
+                "level": 90,                                                                                                                                                                                                    
+                "maxMoney": 30000,                                                                                                                                                                                                    
+                "name": "unionpay",                                                                                                                                                                                                    
+                "updateTime": "2017-10-18 14:39:41",                                                                                                                                                                                                    
+                "valid": 1                                                                                                                                                                                                    
+            },                                                                                                                                                                                                    
+            {                                                                                                                                                                                                    
+                "bankCode": "99",                                                                                                                                                                                                    
+                "busiType": 1,                                                                                                                                                                                                    
+                "id": 3,                                                                                                                                                                                                    
+                "inputTime": "2017-10-18 14:45:25",                                                                                                                                                                                                    
+                "level": 90,                                                                                                                                                                                                    
+                "maxMoney": 999999999,                                                                                                                                                                                                    
+                "name": "转账汇款",                                                                                                                                                                                                    
+                "updateTime": "2017-10-18 14:45:27",                                                                                                                                                                                                    
+                "valid": 1                                                                                                                                                                                                    
+            }                                                                                                                                                                                                    
+        ] }, "header": { "retCode": 61000, "retMsg": "获取第三方充值渠道成功！" } }
+
+---
+
+#### 54) 合众快捷支付下单
+
+##### 方法名称
+
+heZhongQuickPlaceAnOrder
+
+##### 方法描述
+
+合众快捷支付下单
+
+##### 访问路径
+
+<http://ServiceAddress/user/heZhongQuickPlaceAnOrder/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称  |  数据类型   | 参数说明 |
+| ------ | ----- | ------- | ---- |
+| token  |  令牌号  | varchar |
+| amount | 金额（分） | varchar |
+
+##### 输出参数
+
+|   参数代码    | 参数名称  |  数据类型   | 参数说明 |
+| --------- | ----- | ------- | ---- |
+| mercOrdNo | 商户订单号 | varchar |
+
+##### 响应报文示例
+
+{ "body": { "mercOrdNo": "245222102414790656" }, "header": { "retCode": 621001, "retMsg": "快捷支付下单成功！" } }
+
+---
+
+#### 55) 合众快捷支付下发短信
+
+##### 方法名称
+
+heZhongQuickSendSMS
+
+##### 方法描述
+
+合众快捷支付下单
+
+##### 访问路径
+
+<http://ServiceAddress/user/heZhongQuickSendSMS/{seqId}>
+
+##### 输入参数
+
+|   参数代码    | 参数名称  |  数据类型   |    参数说明     |
+| --------- | ----- | ------- | ----------- |
+|   token   |  令牌号  | varchar |             |
+|   phone   |  手机号  | varchar |             |
+| mercOrdNo | 商户订单号 | varchar | 下单时候接收到的订单号 |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|      |      |      |
+
+##### 响应报文示例
+
+{"header":{"retCode":622001,"retMsg":"快捷支付下发短信成功！"}}
+
+---
+
+#### 56) 获取用户快捷绑定银行卡列表
+
+##### 方法名称
+
+getQuickBankCard
+
+##### 方法描述
+
+获取用户快捷绑定银行卡列表
+
+##### 访问路径
+
+<http://ServiceAddress/user/getQuickBankCard/{seqId}>
+
+##### 输入参数
+
+|   参数代码   | 参数名称 |  数据类型   |          参数说明           |
+| -------- | ---- | ------- | ----------------------- |
+|  token   | 令牌号  | varchar |                         |
+| busiType | 业务类型 | varchar | 1-合众、2-邦付宝 、3-九派、4-易宝支付 |
+
+##### 输出参数
+
+|    参数代码     |         参数名称         | 数据类型 | 参数说明 |
+| ----------- | -------------------- | ---- | ---- |
+| bankCardNum |         银行卡号         |      |
+|  bankCode   |         银行简码         |      |
+|  bankName   |         银行名称         |      |
+|  bankPhone  |       银行预留手机号        |      |
+|  bindTime   |         绑定时间         |      |
+|  busiType   |    业务类型（1-合众快捷支付）    |      |
+| cardStatus  | 银行卡是否认证 0-未认证 1-已经认证 |      |
+|    flag     |     是否删除 1删除 0正常     |      |
+|   userId    |         用户ID         |      |
+|  userName   |        用户开户名称        |      |
+| contractId  |         协议号          |      |
+
+##### 响应报文示例
+
+{ "body": { "bankCardQuickBeanList": [                                      
+{                                      
+"authTime": "2017-10-23 11:12:45",                                      
+"bankCardNum": "6225880129365673",                                      
+"bankCode": "ABC",                                      
+"bankName": "招商银行",                                      
+"bankPhone": "15652371234",                                      
+"bindTime": "2017-10-23 11:12:35",                                      
+"busiType": 1,                                      
+"cardStatus": "0",                                      
+"flag": 0,                                      
+"id": 1,                                      
+"userId": 308850,                                      
+"userName": "高鹏", "contractId":"12345678930114"            }                                                                                                                                                                        
+        ] }, "header": { "retCode": 623001, "retMsg": "获取快捷支付银行卡信息成功！" } }
+
+---
+
+#### 57) 删除用户快捷绑定银行卡列表
+
+##### 方法名称
+
+delQuickBankCard
+
+##### 方法描述
+
+删除用户快捷绑定银行卡列表
+
+##### 访问路径
+
+<http://ServiceAddress/user/delQuickBankCard/{seqId}>
+
+##### 输入参数
+
+|   参数代码   | 参数名称 |  数据类型   |          参数说明           |
+| -------- | ---- | ------- | ----------------------- |
+|  token   | 令牌号  | varchar |                         |
+|  cardNo  | 银行卡号 | varchar |                         |
+| busiType | 业务类型 | varchar | 1-合众、2-邦付宝 、3-九派、4-易宝支付 |
+
+##### 输出参数
+
+|    参数代码     |         参数名称         | 数据类型 | 参数说明 |
+| ----------- | -------------------- | ---- | ---- |
+| bankCardNum |         银行卡号         |      |
+|  bankCode   |         银行简码         |      |
+|  bankName   |         银行名称         |      |
+|  bankPhone  |       银行预留手机号        |      |
+|  bindTime   |         绑定时间         |      |
+|  busiType   |    业务类型（1-合众快捷支付）    |      |
+| cardStatus  | 银行卡是否认证 0-未认证 1-已经认证 |      |
+|    flag     |     是否删除 1删除 0正常     |      |
+|   userId    |         用户ID         |      |
+|  userName   |        用户开户名称        |      |
+
+##### 响应报文示例
+
+{ "body": { "bankCardQuickBeanList": [同56接口返回内容 ] }, "header": { "retCode": 624001, "retMsg": "删除银行卡信息成功！" } }
+
+---
+
+#### 58) 合众快捷支付-确认支付
+
+##### 方法名称
+
+heZhongQuickConfirmPay
+
+##### 方法描述
+
+合众快捷支付-确认支付
+
+##### 访问路径
+
+<http://ServiceAddress/user/heZhongQuickConfirmPay/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |  数据类型   | 参数说明 |
+| --------- | ------ | ------- | ---- |
+|   token   |  令牌号   | varchar |      |
+|  cardNo   |  银行卡号  | varchar |      |
+|  smsCode  | 短信验证码  | varchar |      |
+| mercOrdNo | 商户订单号  | varchar |      |
+|   phone   | 银行预留手机 | varchar |      |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例
+
+{"header":{"retCode":625001,"retMsg":"充值成功！"}}
+
+---
+
+#### 59) 二维码 -- 消费二维码
+
+##### 方法名称
+
+useLoginQRCode
+
+##### 方法描述
+
+消费二维码，此接口目的，当前手机占用此二维码，其他人无法再扫描此手机
+
+##### 访问路径
+
+<http://ServiceAddress/user/useLoginQRCode/{seqId}>
+
+##### 输入参数
+
+| 参数代码  |  参数名称   |  数据类型   |                 参数说明                 |
+| ----- | ------- | ------- | ------------------------------------ |
+| token |   令牌号   | varchar |                                      |
+| uuid  | 二维码唯一标识 | varchar | 此标识，扫描二维码中获取，二维码获取json格式内容中content内容 |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例
+
+{ "header": { "retCode": 0, "retMsg": "成功！" } }
+
+---
+
+#### 60) 二维码 -- 确认登录
+
+##### 方法名称
+
+confirmQRLogin
+
+##### 方法描述
+
+确认登录
+
+##### 访问路径
+
+<http://ServiceAddress/user/confirmQRLogin/{seqId}>
+
+##### 输入参数
+
+| 参数代码  |  参数名称   |  数据类型   |                 参数说明                 |
+| ----- | ------- | ------- | ------------------------------------ |
+| token |   令牌号   | varchar |                                      |
+| uuid  | 二维码唯一标识 | varchar | 此标识，扫描二维码中获取，二维码获取json格式内容中content内容 |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例json
+
+{ "header": { "retCode": 0, "retMsg": "成功！" } }
+
+---
+
+#### 61) 我的取款记录
+
+##### 方法名称
+
+withdrawDetailInfo
+
+##### 方法描述
+
+获取取款记录。
+
+##### 访问路径
+
+<http://ServiceAddress/user/withdrawDetailInfo/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |    数据类型     |            参数说明            |
+| --------- | ------ | ----------- | -------------------------- |
+|  status   |  记录状态  |   Integer   | 不传默认全查，处理中：2 取款成功：5 取款失败：6 |
+| pageIndex | 数据起始页  |   Integer   |          起始页从1开始           |
+| pageSize  | 每页数据大小 |   Integer   |          每页包含数据条数          |
+| beginDate |  开始时间  | varchar(10) |      时间格式为 yyyy-mm-dd      |
+|  endDate  |  结束时间  | varchar(10) |      时间格式为 yyyy-mm-dd      |
+|   verNo   |  版本号   | varchar(16) |      如果不存在，默认使用最低版本接口      |
+|   token   |  令牌值   | varchar(64) |                            |
+
+##### 输出参数
+
+|              参数代码              |         参数名称          |  数据类型   | 参数说明 |
+| ------------------------------ | --------------------- | ------- | ---- |
+|         withdrawAmouts         |     对应时间取款金额总和（分）     |  long   |      |   |
+|             total              |          总条数          |  long   |      |   |
+|           beginDate            |         开始时间          | varchar |      |
+|            endDate             |         结束时间          | varchar |      |
+|       withdrawDetailList       |        取款记录列表         |  List   |      |   |
+|   withdrawDetailList.amount    |        取款金额（分）        |  long   |      |   |
+|  withdrawDetailList.applyTime  |         申请时间          | varchar |      |   |
+|  withdrawDetailList.bankName   |         银行名称          | varchar |      |   |
+| withdrawDetailList.bankCardNum |         银行卡号          | varchar |      |
+|   withdrawDetailList.status    | 取款状态: 处理中, 取款成功, 取款失败 | varchar |      |
+
+---
+
+#### 62) 我的充值记录
+
+##### 方法名称
+
+getChargeInfo
+
+##### 方法描述
+
+我的充值记录
+
+##### 访问路径
+
+<http://ServiceAddress/user/getChargeInfo/{seqId}>
+
+##### 输入参数
+
+|   参数代码    |  参数名称  |  数据类型   |           参数说明           |
+| --------- | ------ | ------- | ------------------------ |
+| busiType  |  业务类型  | varchar |      1-在线支付、2-转账汇款       |
+| startDate |  起始日期  | varchar |                          |
+|  endDate  |  截止日期  | varchar |                          |
+|  pageNo   |   页码   | varchar |                          |
+|  status   | 转账汇款状态 | varchar | 0-所有、1-处理中、2-充值成功、3-充值失败 |
+
+##### 输出参数
+
+|          参数代码           |            参数名称             |  数据类型   | 参数说明 |
+| ----------------------- | --------------------------- | ------- | ---- |
+|       totalAmount       |           总金额（分）            | varchar |      |   |
+|        totalRows        |            总记录数             | varchar |      |   |
+|        startDate        |            起始日期             | varchar |      |
+|         endDate         |            截止日期             | varchar |      |
+|       chargeList        |             数组              |  list   |      |   |
+|    chargeList.amount    |            金额（分）            | varchar |      |   |
+|  chargeList.failSource  |             原因              | varchar |      |   |
+|    chargeList.state     | 状态：0-所有、1-处理中、2-充值成功、3-充值失败 | varchar |      |   |
+|  chargeList.applyTime   |            申请时间             | varchar |      |   |
+| chargeList.rechargeTime |            充值时间             | varchar |      |   |
+
+##### 响应报文示例
+
+{ "body": { "chargeList": [                                                                                                                                        
+            {                                                                                                                                        
+                "amount": "10000000",                                                                                                                                        
+                "failSource": "线下充值成功",                                                                                                                                        
+                "state": "2",                                                                                                                                        
+                "time": "2017-11-01 13:34:45"                                                                                                                                        
+            }                                                                                                                                        
+        ], "totalAmount": 10000000, "totalRows": 1 }, "header": { "retCode": 0, "retMsg": "成功" } }
+
+---
+
+#### 63) 产品入伙口令校验
+
+##### 方法名称
+
+checkJoinCode
+
+##### 方法描述
+
+获取取款记录。
+
+##### 访问路径
+
+<http://ServiceAddress/fund/checkJoinCode/{seqId}>
+
+##### 输入参数
+
+|   参数代码   | 参数名称 |    数据类型     |       参数说明       |
+| -------- | ---- | ----------- | ---------------- |
+|  fundId  | 产品ID |   Integer   |                  |
+| joinCode | 入伙口令 | varchar(10) |                  |
+|  verNo   | 版本号  | varchar(16) | 如果不存在，默认使用最低版本接口 |
+|  token   | 令牌值  | varchar(64) |                  |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+|      |      |      |      |   |
+
+##### 响应报文示例
+
+{ "body": null }, "header": { "retCode": 19012, "retMsg": "口令错误，请您重新输入" } }
+
+{ "body": null }, "header": { "retCode": 19013, "retMsg": "口令错误，您已连续输错5次，请2小时后重试" } }
+
+{ "body": null }, "header": { "retCode": 19014, "retMsg": "口令正确" } }
+
+---
+
+#### 64) 邦付宝 -- 快捷支付 -- 下单
+
+##### 方法名称
+
+bfbQuickPlaceAnOrder
+
+##### 方法描述
+
+获取取款记录。
+
+##### 访问路径
+
+<http://ServiceAddress/user/bfbQuickPlaceAnOrder/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称  |  数据类型   | 参数说明 |
+| ------ | ----- | ------- | ---- |
+| token  |  令牌号  | varchar |      |
+| amount | 金额（分） | varchar | 单位分  |
+
+##### 输出参数
+
+|  参数代码   | 参数名称  | 数据类型 | 参数说明 |
+| ------- | ----- | ---- | ---- |
+| orderId | 商户订单号 |      |      |
+
+##### 响应报文示例
+
+---
+
+#### 65) 邦付宝 -- 快捷支付 -- 申请验证码
+
+##### 方法名称
+
+bfbQuickPaySMS
+
+##### 方法描述
+
+获取取款记录。
+
+##### 访问路径
+
+<http://ServiceAddress/user/bfbQuickPaySMS/{seqId}>
+
+##### 输入参数
+
+|   参数代码    | 参数名称  |  数据类型   | 参数说明 |
+| --------- | ----- | ------- | ---- |
+|   token   |  令牌号  | varchar |      |
+|  cardNo   | 银行卡号  | varchar |      |
+| cardPhone | 预留手机号 | varchar |      |
+
+##### 输出参数
+
+|          参数代码           | 参数名称 | 数据类型 | 参数说明 |
+| ----------------------- | ---- | ---- | ---- |
+| QuickPaySMSResponseBean | 返回消息 |      |      |
+
+##### 响应报文示例
+
+{ "body": {"header": { "retCode": 0, "retMsg": "成功" } }
+
+632004, "验证码发送频率过高，请稍后重试" 632005, "银行预留手机号有误" 632006, "手机号或银行卡为空"
+
+---
+
+#### 66) 邦付宝 -- 快捷支付 -- 确认支付
+
+##### 方法名称
+
+bfbQuickConfirmPay
+
+##### 方法描述
+
+确认支付。
+
+##### 访问路径
+
+<http://ServiceAddress/user/bfbQuickConfirmPay/{seqId}>
+
+##### 输入参数
+
+|     参数代码      |  参数名称   |  数据类型   | 参数说明 |
+| ------------- | ------- | ------- | ---- |
+|     token     |   令牌号   | varchar |      |
+|    orderId    |   订单号   | varchar |      |
+|  bankCardNo   |  银行卡号   | varchar |      |
+| bankCardPhone | 银行预留手机号 | varchar |      |
+|    smsCode    |  短信验证码  | varchar |      |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例
+
+{"header":{"retCode":633001,"retMsg":"支付成功！"}}
+
+---
+
+#### 67) 获取取款银行类型和名称
+
+##### 方法名称
+
+getWithdrawBankList
+
+##### 方法描述
+
+确认支付。
+
+##### 访问路径
+
+<http://ServiceAddress/system/getWithdrawBankList/{seqId}>
+
+##### 输入参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+无需参数
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+
+| withdrawBankList | 银行列表 |      |      |
+
+##### 响应报文示例
+
+{ "body": { "withdrawBankList": [{    "bankType": "BOC-NET-B2C",                                                                  
+"bankName": "中国银行",            }                                                                                                                                        
+        ] }, "header": { "retCode": 0, "retMsg": "成功" } }
+
+---
+
+#### 68) 九派支付 -- 根据卡号查询卡信息
+
+##### 方法名称
+
+getJiuPaiBankCardInfo
+
+##### 方法描述
+
+根据卡号查询卡信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/getJiuPaiBankCardInfo/{seqId}>
+
+##### 输入参数
+
+|  参数代码  | 参数名称 |  数据类型   | 参数说明 |
+| ------ | ---- | ------- | ---- |
+| token  | 令牌号  | varchar |      |
+| cardNo |  卡号  |  ----   | ---- |
+
+##### 输出参数
+
+|   参数代码   | 参数名称 | 数据类型 |     参数说明     |
+| -------- | ---- | ---- | ------------ |
+| bankAbbr |  简称  |      |              |
+| bankName |  名称  |      |              |
+|  cardNo  |  卡号  |      |              |
+| cardType | 卡片类型 |      | 0.储蓄卡， 1.信用卡 |
+
+##### 响应报文示例:
+
+"body": { "bankAbbr": "CMB", "bankName": "招商银行", "cardNo": "9df04f691e75d4fa2c1564942158d80e906ad91d4dbb3063", "cardType": "0" }, "header": { "retCode": 640001, "retMsg": "查询成功" }
+
+---
+
+#### 69) 九派支付 -- 快捷绑卡
+
+##### 方法名称
+
+jiuPaiRpmBindCard
+
+##### 方法描述
+
+根据卡号查询卡信息
+
+##### 访问路径
+
+<http://ServiceAddress/user/jiuPaiRpmBindCard/{seqId}>
+
+##### 输入参数
+
+|   参数代码   |   参数名称   |  数据类型   | 参数说明 |
+| -------- | -------- | ------- | ---- |
+|  token   |   令牌号    | varchar |      |
+|  phone   |   手机号    | varchar | ---- |
+|  cardNo  |    卡号    | varchar | ---- |
+| eventID  | 活体检测事件ID | varchar | ---- |
+| bankAbbr |    简称    |         |      |
+| bankName |    名称    |         |      |
+
+##### 输出参数
+
+|    参数代码    | 参数名称  |    数据类型     |              参数说明               |
+| ---------- | ----- | ----------- | ------------------------------- |
+| contractId |  协议号  | String(32)  |           返回绑卡协议号 不可空           |
+|  orderId   | 商户订单号 | String(32)  |            商户订单号 不可空            |
+|  bankName  | 银行名称  | String(120) |        返回银行名称，例如：中国银行 可空        |
+|  bankAbbr  | 银行缩写  | String(20)  |               可空                |
+|  cardType  |  卡类型  |  String(2)  |         0.储蓄卡，1.信用卡 不可空         |
+| extension  | 消息扩展  |             | 如银行卡卡级别等，扩展字段在接入时由双方协商定义消息内容 可空 |
+
+##### 响应报文示例:
+
+"body": {略}, "header": { "retCode": 34000, "retMsg": "绑定成功" }
+
+"body": { null }, "header": { "retCode": 34001, "retMsg": "未进行实名认证" }
+
+"body": { null }, "header": { "retCode": 34006, "retMsg": "银行卡号填写错误" }
+
+"body": { null }, "header": { "retCode": 34007, "retMsg": "此账户已经存在，请勿重复绑定" }
+
+"body": { null }, "header": { "retCode": 34008, "retMsg": "手机号格式错误" }
+
+---
+
+#### 70) 九派支付 -- 快捷下单
+
+##### 方法名称
+
+jiuPaiQuickPayInit
+
+##### 方法描述
+
+快捷下单
+
+##### 访问路径
+
+<http://ServiceAddress/user/jiuPaiQuickPayInit/{seqId}>
+
+##### 输入参数
+
+|    参数代码    |   参数名称    |  数据类型   | 参数说明 |
+| ---------- | --------- | ------- | ---- |
+|   token    |    令牌号    | varchar |      |
+| contractId |   绑卡协议号   | varchar | ---- |
+|   amount   |   金额（分）   | varchar | ---- |
+|  clientIp  | 用户客户端IP地址 | varchar | ---- |
+
+##### 输出参数
+
+|    参数代码    |       参数名称       |    数据类型     | 参数说明 |
+| ---------- | ---------------- | ----------- | ---- |
+|  orderId   |     商户上送订单号      | String(32)  |      |
+| payOrderId |      支付订单号       | String(32)  |      |
+|   acDate   | 记账日期， 格式YYYYMMDD | String(120) |      |
+
+##### 响应报文示例:
+
+{"body":{"acDate":"","orderId":"","payOrderId":""},"header":{"retCode":641001,"retMsg":"下单成功！"}}
+
+---
+
+#### 71) 九派支付 -- 重发短信
+
+##### 方法名称
+
+jiuPaiSMS
+
+##### 方法描述
+
+重发短信
+
+##### 访问路径
+
+<http://ServiceAddress/user/jiuPaiSMS/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称  |  数据类型   |         参数说明         |
+| ---------- | ----- | ------- | -------------------- |
+|   token    |  令牌号  | varchar |                      |
+| contractId | 绑卡协议号 | varchar |         ----         |
+|  orderId   |  订单号  | varchar | 绑卡时不需要传此参数，支付时需要传此参数 |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例:
+
+{"header":{"retCode":642002,"retMsg":"短信发送失败"}}
+
+---
+
+#### 72) 九派支付-- 用户解绑银行卡
+
+##### 方法名称
+
+jiuPaiRpmUnBindCard
+
+##### 方法描述
+
+删除用户快捷绑定银行卡列表
+
+##### 访问路径
+
+<http://ServiceAddress/user/jiuPaiRpmUnBindCard/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称 |  数据类型   | 参数说明 |
+| ---------- | ---- | ------- | ---- |
+|   token    | 令牌号  | varchar |      |
+| contractId | 协议号  | varchar |      |
+
+##### 输出参数
+
+|    参数代码     |         参数名称         |  数据类型   | 参数说明 |
+| ----------- | -------------------- | ------- | ---- |
+| bankCardNum |         银行卡号         |         |
+|  bankCode   |         银行简码         |         |
+|  bankName   |         银行名称         |         |
+|  bankPhone  |       银行预留手机号        |         |
+|  bindTime   |         绑定时间         |         |
+|  busiType   |     业务类型（3-九派支付）     |         |
+| cardStatus  | 银行卡是否认证 0-未认证 1-已经认证 |         |
+|    flag     |     是否删除 1删除 0正常     |         |
+|   userId    |         用户ID         |         |
+|  userName   |         用户名称         |         |
+| contractId  |         协议号          | varchar |      |
+
+##### 响应报文示例
+
+{ "body": { "bankCardQuickBeanList": [同56接口返回内容 ] }, "header": { "retCode": 641005, "retMsg": "解绑成功！" } }
+
+{ "body": { "bankCardQuickBeanList": [同56接口返回内容 ] }, "header": { "retCode": 641006, "retMsg": "此卡已解绑，请勿重复解绑！" } }
+
+{ "body": { "bankCardQuickBeanList": [同56接口返回内容 ] }, "header": { "retCode": 641007, "retMsg": "协议号不存在！" } }
+
+{ "body": { "bankCardQuickBeanList": [同56接口返回内容 ] }, "header": { "retCode": 641008, "retMsg": "解绑失败！" } }
+
+---
+
+#### 73) 九派支付 -- 确认支付
+
+##### 方法名称
+
+jiuPaiQuickPayCommit
+
+##### 方法描述
+
+确认支付
+
+##### 访问路径
+
+<http://ServiceAddress/user/jiuPaiQuickPayCommit/{seqId}>
+
+##### 输入参数
+
+|    参数代码    |   参数名称    |  数据类型   | 参数说明 |
+| ---------- | --------- | ------- | ---- |
+|   token    |    令牌号    | varchar |      |
+| contractId |   绑卡协议号   | varchar | ---- |
+|   amount   |    金额     | varchar | ---- |
+|  orderId   |    订单号    | varchar | ---- |
+| checkCode  |    验证码    | varchar | ---- |
+|  eventID   | 九派活体事件ID  | varchar | ---- |
+|  clientIp  | 用户客户端IP地址 | varchar | ---- |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例:
+
+---
+
+#### 74) 九派支付 -- 获取支付限额基础数据
+
+##### 方法名称
+
+queryQuickPayLimit
+
+##### 方法描述
+
+获取支付限额基础数据
+
+##### 访问路径
+
+<http://ServiceAddress/user/queryQuickPayLimit/{seqId}>
+
+##### 输入参数
+
+|   参数代码   | 参数名称 |  数据类型   |        参数说明         |
+| -------- | ---- | ------- | ------------------- |
+|  token   | 令牌号  | varchar |                     |
+| busiType | 业务类型 | varchar | 业务类型（1-九派支付，2-易宝支付） |
+
+##### 输出参数
+
+|              参数代码              | 参数名称  |  数据类型   | 参数说明 |
+| ------------------------------ | ----- | ------- | ---- |
+|           limitList            |  数组   |  LIST   |      |
+|       limitList.bankCode       | 银行编码  | VARCHAR |      |
+|       limitList.bankName       | 银行名称  | VARCHAR |      |
+|     limitList.singleLimit      | 单笔限额  | VARCHAR |      |
+|   limitList.dailyTotalLimit    | 日累计限额 | VARCHAR |      |
+|   limitList.monthTotalLimit    | 单月限额  | VARCHAR |      |
+| limitList.dailyTotalLimitCount | 单日限次  | VARCHAR |      |
+| limitList.monthTotalLimitCount | 单月限次  | VARCHAR |      |
+
+##### 响应报文示例:
+
+{"body":{"limitList":[{"bankCode":"BOC","bankName":"中国银行","busiType":"1","dailyTotalLimit":"1万","flag":"1","id":18,"singleLimit":"1万"},{"bankCode":"CCB","bankName":"建设银行","busiType":"1","dailyTotalLimit":"1万","flag":"1","id":19,"singleLimit":"5,000.00"},{"bankCode":"GDB","bankName":"广东发展银行","busiType":"1","dailyTotalLimit":"20万","flag":"1","id":20,"singleLimit":"20万\t"},{"bankCode":"CIB","bankName":"兴业银行","busiType":"1","dailyTotalLimit":"20万","flag":"1","id":21,"singleLimit":"20万\t"},{"bankCode":"PABC","bankName":"平安银行","busiType":"1","dailyTotalLimit":"5万","flag":"1","id":22,"singleLimit":"5万\t"},{"bankCode":"ICBC","bankName":"工商银行","busiType":"1","dailyTotalLimit":"5万","flag":"1","id":23,"singleLimit":"5万\t"},{"bankCode":"SPDB","bankName":"浦发银行","busiType":"1","dailyTotalLimit":"5万","flag":"1","id":24,"singleLimit":"5万\t"},{"bankCode":"CMB","bankName":"招商银行","busiType":"1","dailyTotalLimit":"1,000.00","flag":"1","id":25,"singleLimit":"1,000.00"}]},"header":{"retCode":643001,"retMsg":"限额数据获取成功！"}}
+
+---
+
+#### 75) 九派支付 -- 绑卡结果校验
+
+##### 方法名称
+
+jiuPaiRpmBindCardCommit
+
+##### 方法描述
+
+绑卡结果校验
+
+##### 访问路径
+
+<http://ServiceAddress/user/jiuPaiRpmBindCardCommit/{seqId}>
+
+##### 输入参数
+
+|    参数代码    | 参数名称  |  数据类型   | 参数说明 |
+| ---------- | ----- | ------- | ---- |
+|   token    |  令牌号  | varchar |      |
+| contractId |  协议号  | VARCHAR |      |
+| checkCode  | 短信验证码 | VARCHAR |      |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例:
+
+---
+
+#### 76) 易宝支付 -- 快捷下单
+
+##### 方法名称
+
+yeeBaoQuickPlaceAnOrder
+
+##### 方法描述
+
+下单
+
+##### 访问路径
+
+<http://ServiceAddress/user/yeeBaoQuickPlaceAnOrder/{seqId}>
+
+##### 输入参数
+
+|    参数代码    |  参数名称   |  数据类型   | 参数说明 |
+| ---------- | ------- | ------- | ---- |
+|   token    |   令牌号   | varchar |      |
+|   amount   |  金额（分）  | VARCHAR |      |
+|   phone    |   手机号   | VARCHAR |      |
+| terminalid | 设备号UUID | VARCHAR |      |
+|   cardNo   |   卡号    | VARCHAR |      |
+
+##### 输出参数
+
+|  参数代码   | 参数名称 | 数据类型 | 参数说明 |
+| ------- | ---- | ---- | ---- |
+| orderId | 订单号  | ---- | ---- |
+
+##### 响应报文示例:
+
+{"body":{"orderId":"292358663992119296"},"header":{"retCode":670000,"retMsg":"下单成功"}}
+
+---
+
+#### 77) 易宝支付 -- 快捷确认
+
+##### 方法名称
+
+yeeBaoQuickConfirm
+
+##### 方法描述
+
+快捷确认
+
+##### 访问路径
+
+<http://ServiceAddress/user/yeeBaoQuickConfirm/{seqId}>
+
+##### 输入参数
+
+|  参数代码   | 参数名称  |  数据类型   | 参数说明 |
+| ------- | ----- | ------- | ---- |
+|  token  |  令牌号  | varchar |      |
+| orderId |  订单号  | VARCHAR |      |
+| smsCode | 短信验证码 | VARCHAR |      |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例:
+
+{"header":{"retCode":680001,"retMsg":"确认支付失败。"}}
+
+---
+
+#### 78) 易宝支付 -- 快捷支付重发短信
+
+##### 方法名称
+
+yeeBaoQuickPaySMS
+
+##### 方法描述
+
+快捷确认
+
+##### 访问路径
+
+<http://ServiceAddress/user/yeeBaoQuickPaySMS/{seqId}>
+
+##### 输入参数
+
+|  参数代码   | 参数名称 |  数据类型   | 参数说明 |
+| ------- | ---- | ------- | ---- |
+|  token  | 令牌号  | varchar |      |
+| orderId | 订单号  | VARCHAR |      |
+
+##### 输出参数
+
+| 参数代码 | 参数名称 | 数据类型 | 参数说明 |
+| ---- | ---- | ---- | ---- |
+
+##### 响应报文示例:
+
+{"header":{"retCode":681001,"retMsg":"重发短信失败。"}}
+
+---
