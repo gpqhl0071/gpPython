@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>格式化字符串</title>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+</head>
+
+<style>
+    textarea {
+        resize: none;
+        width: 1300px;
+        height: 20px;
+    }
+</style>
+<script>
+    function gen() {
+
+        var str1 = $('#str1').val();
+        var sign = $('#sign').val();
+
+        $.ajax(
+            {
+                url: "/transString",
+                data: 'str1=' + str1 + '&sign=' + sign,
+                type: 'POST',
+                success: function (response) {
+                    $('#str2').html(response);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            }
+        );
+    }
+</script>
+<body>
+<form>
+    替换符号：
+    <input type="text" name="sign" id="sign"/><br>
+    字符串：<br>
+    <textarea name="str1" id="str1" style="width: 800px;height: 200px"></textarea> <br>
+    格式化后：<br>
+    <textarea name="str2" id="str2" style="width: 800px;height: 200px"></textarea> <br>
+
+    <button id="b01" type="button" onclick="gen()">格式化</button>
+    <br>
+
+</form>
+</body>
+</html>

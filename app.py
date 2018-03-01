@@ -52,5 +52,17 @@ def upload_file():
     return render_template('upload.html', m=result)
 
 
+@app.route('/transString', methods=['POST', 'GET'])
+def transString():
+    if request.method == 'GET':
+        return render_template('tranString.html')
+    else:
+        str1 = request.form['str1']
+        sign = request.form['sign']
+        result = str1.replace(sign, '\n')
+        print(result)
+        return result
+
+
 if __name__ == "__main__":
     app.run()
