@@ -60,7 +60,6 @@ def transString():
         str1 = request.form['str1']
         sign = request.form['sign']
         result = str1.replace(sign, '\n')
-        print(result)
         return result
 
 
