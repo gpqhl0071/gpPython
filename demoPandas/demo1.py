@@ -1,4 +1,5 @@
-import requests
+li = [1, 2, 3, 4]
 
-r = requests.get('https://www.1001.co')
-print(r.url)
+del li[2]
+
+print(li)
