@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>爬取大象国际仓库JAR</title>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+</head>
+
+<style>
+    textarea {
+        resize: none;
+        width: 1300px;
+        height: 20px;
+    }
+</style>
+<script>
+    function gen() {
+
+        var dxName = $('#dxName').val();
+
+        $.ajax(
+            {
+                url: "/nexusJarURL",
+                data: 'dxName=' + dxName,
+                type: 'POST',
+                success: function (r) {
+                    var jsonarray = $.parseJSON(r);
+
+                    htmlUrl = ''
+                    $.each(jsonarray, function (i, item) {
+                        htmlUrl = htmlUrl + '<div><a href="' + item.value + '">' + item.name + '</a></div><br>'
+                    })
+                    $('#str2').html(htmlUrl);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            }
+        );
+    }
+</script>
+<body>
+<form>
+    <select id="dxName">
+        <option value="dx-web">dx-web</option>
+        <option value="dx-aps">dx-aps</option>
+        <option value="dx-dm">dx-dm</option>
+        <option value="dx-agent">dx-agent</option>
+        <option value="dx-autotask">dx-autotask</option>
+        <option value="dx-public-api">dx-public-api</option>
+        <option value="dx-public-beans">dx-public-beans</option>
+        <option value="dx-public-api-service">dx-public-api-service</option>
+    </select>
+    <br>
+
+    <button id="b01" type="button" onclick="gen()">爬取URL</button>
+    <br>
+    <hr
+
+    <div id="str2"></div>
+
+</form>
+</body>
+</html>

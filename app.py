@@ -5,6 +5,8 @@ from flask import Flask, render_template, request
 import genCode as gc
 import uploadFile as uploadFile
 import testPandas as tPS
+import json
+from request import requestNexus
 
 app = Flask(__name__)
 application = app
@@ -61,6 +63,16 @@ def transString():
         sign = request.form['sign']
         result = str1.replace(sign, '\n')
         return result
+
+
+@app.route('/nexusJarURL', methods=['POST', 'GET'])
+def nexusJarURL():
+    if request.method == 'GET':
+        return render_template('nexusUrl.html')
+    else:
+        dx_name = request.form['dxName']
+        list = requestNexus.getUrl(dx_name)
+        return json.dumps(list)
 
 
 if __name__ == "__main__":

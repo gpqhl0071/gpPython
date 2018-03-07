@@ -6,7 +6,7 @@ _download_top_url = 'http://nexus.td.internal/nexus/repository/'
 _download_group = 'maven-snapshots/'
 _suffix = '.jar'
 
-_projectList = ['dx-web', 'dx-aps', 'dx- ', 'dx-dm', 'dx-mt', 'dx-agent']
+_projectList = ['dx-web', 'dx-aps', 'dx-autotask ', 'dx-dm', 'dx-mt', 'dx-agent']
 
 
 def requestNexus():
@@ -22,6 +22,7 @@ def requestNexus():
 
 
 def tranResult(r):
+    print(r)
     result = json.loads(r)
     data = result['result']['data']
 
@@ -29,6 +30,7 @@ def tranResult(r):
         print('未匹配到内容！！！')
         return
 
+    rs_list = []
     for d in data:
         path1 = d['group'].replace('.', '/') + '/'
         path2 = _dx_name + '/'
@@ -47,7 +49,13 @@ def tranResult(r):
         download_url = _download_top_url + _download_group + path1 + path2 + path3 + path4 + _suffix
 
         rs = d['name'] + '-' + d['version'] + ": " + download_url
-        print(rs)
+        # print(rs)
+
+        map = {'name': d['name'] + '-' + d['version'], 'value': download_url}
+
+        rs_list.append(map)
+
+    return rs_list
 
 
 def setSuffix():
@@ -56,10 +64,20 @@ def setSuffix():
         _suffix = '.war'
 
 
+def getUrl(value):
+    global _dx_name
+    _dx_name = value
+    r = requestNexus()
+    rs = r.text
+    return tranResult(rs)
+
+
 if __name__ == "__main__":
     _dx_name = input('请输入jar名字：')
 
     r = requestNexus()
 
     rs = r.text
-    tranResult(rs)
+    _list = tranResult(rs)
+    for _map in _list:
+        print(_map['name'] + ':' + _map['value'])
