@@ -16,7 +16,7 @@ def requestNexus():
          "filter": [{"property": "format", "value": "maven2"},
                     {"property": "attributes.maven2.artifactId", "value": _dx_name}]}], "type": "rpc", "tid": 13}
     # 公司内部地址
-    url = 'http://nexus.td.internal/nexus/service/extdirect'
+    url = 'http://192.168.15.188:28081/nexus/service/extdirect'
     r = requests.post(url, json=param1)
     return r
 
