@@ -7,20 +7,22 @@ __totalSize = 0
 
 __sortMap = {}
 
+__list = []
+
 
 def iterFile(path):
     global __totalSize
-    files = os.listdir(path)
+    files = os.listdir (path)
     for f in files:
         try:
             p1 = path + '/' + f
-            if os.path.isdir(p1):
+            if os.path.isdir (p1):
                 # 遍历目录
-                iterFile(p1)
+                iterFile (p1)
             else:
                 # 遍历文件
-                fsize = os.path.getsize(p1)
-                f = fsize / float(1024)
+                fsize = os.path.getsize (p1)
+                f = fsize / float (1024)
                 __totalSize = __totalSize + f
         except:
             pass
@@ -28,20 +30,42 @@ def iterFile(path):
 
 def getPathSize(path):
     global __totalSize
-    files = os.listdir(path)
+    files = os.listdir (path)
     for p in files:
         try:
             allpath = path + '/' + p
-            iterFile(allpath)
-            # print('路径：' + allpath + '，大小：' + str(__totalSize / float(1024) / float(1024)) + 'GB')
+            iterFile (allpath)
+            # print('路径：' + allpath + '，大小：' + str(round(__totalSize / float(1024) / float(1024), 2)) + 'GB')
             global __sortMap
-            __sortMap[allpath] = __totalSize / float(1024) / float(1024)
+            __sortMap[allpath] = str (round (__totalSize / float (1024) / float (1024), 2))
             __totalSize = 0
         except:
             pass
 
 
-getPathSize('C:\dxlc/')
+def sort():
+    for k, v in __sortMap.items ():
+        l = []
+        l.append (v)
+        l.append (k)
+        __list.append (l)
 
-for v in __sortMap.values():
-    print(v)
+    __list.sort (reverse=True)
+    for i in __list:
+        formatPrint (i[1], i[0])
+
+
+def formatPrint(key, value):
+    key = '路径：' + key
+    value = '，大小：' + value + 'GB'
+
+    kedLen = 100
+    s = kedLen - len (key)
+    for si in range (s):
+        key = key + ' '
+
+    print (key + value)
+
+
+getPathSize ('C:\dxlc/')
+sort ()
