@@ -37,7 +37,7 @@ def getPathSize(path):
             iterFile (allpath)
             # print('路径：' + allpath + '，大小：' + str(round(__totalSize / float(1024) / float(1024), 2)) + 'GB')
             global __sortMap
-            __sortMap[allpath] = str (round (__totalSize / float (1024) / float (1024), 2))
+            __sortMap[allpath] = float (round (__totalSize / float (1024) / float (1024), 2))
             __totalSize = 0
         except:
             pass
@@ -57,7 +57,7 @@ def sort():
 
 def formatPrint(key, value):
     key = '路径：' + key
-    value = '，大小：' + value + 'GB'
+    value = '，大小：' + str(value) + 'GB'
 
     kedLen = 100
     s = kedLen - len (key)
@@ -67,5 +67,5 @@ def formatPrint(key, value):
     print (key + value)
 
 
-getPathSize ('C:\dxlc/')
+getPathSize ('C:')
 sort ()
