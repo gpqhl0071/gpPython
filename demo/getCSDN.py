@@ -110,11 +110,14 @@ class Spider:
             self.num += 1
             perPageURL = item[1]
             pageTitle = item[2].replace(" ", "").replace("</a>", "").replace("\n", "")
-            brief = self.getBrief(perPageURL)
-            brief = brief.replace("'", "\\\'")
+            # print('博文标题：' + pageTitle + ',博文URL：' + perPageURL)
+            var1 = '[博文标题：' + pageTitle + ']'
+            var2 = '(' + perPageURL + ')'
+            print(var1 + var2)
+            # brief = self.getBrief(perPageURL)
+            # brief = brief.replace("'", "\\\'")
             # result = self.subHtmlLabel (brief)
-            print('标题：' + pageTitle + ",内容：" + brief)
-            saveCSDNToWordPress.saveWordPress(pageTitle, brief, str(self.seq))
+            # saveCSDNToWordPress.saveWordPress(pageTitle, brief, str(self.seq))
             # self.saveBrief (result, pageTitle, item)
 
     def savePageInfo(self):
