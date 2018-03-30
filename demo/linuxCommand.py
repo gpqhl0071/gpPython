@@ -15,12 +15,35 @@ def handleUnix(command):
 
 def getProcessId(str):
     for b in str:
-        if '/bin/tomcat-juli.jar' in b:
+        if ('/bin/tomcat-juli.jar' in b and '/www/' + _tomcatProgram + '/conf/' in b):
             pattern = re.compile('-?[1-9]\d*')
             items = re.findall(pattern, b)
             print(_tomcatProgram + '进程ID：' + items[0])
             return items[0]
 
+
+dx_num = input("请输入要升级的项目（1:dx-web、2:dx-aps、3:dx-agent、4:dx-mt）:")
+
+if dx_num == '1':
+    _program = 'dx-web'
+    _tomcatProgram = 'tomcatdx'
+elif dx_num == '2':
+    _program = 'dx-aps'
+    _tomcatProgram = 'tomcataps'
+elif dx_num == '3':
+    _program = 'dx-agent'
+    _tomcatProgram = 'tomcatAgent'
+elif dx_num == '4':
+    _program = 'dx-mt'
+    _tomcatProgram = 'tomcatMT3'
+else:
+    print('未匹配到您输入的序号...')
+
+print('当前目录下war:')
+for war1 in handleUnix("ls /www/webapp/" + _program + "/work/*.war"):
+    if len(war1) == 0:
+        continue
+    print('  | ----' + war1)
 
 war_name = input('请输入要升级的war包名称:')
 a = handleUnix("unzip /www/webapp/" + _program + "/work/" + war_name)
