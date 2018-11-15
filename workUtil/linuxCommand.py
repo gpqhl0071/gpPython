@@ -22,6 +22,25 @@ def getProcessId(str):
             return items[0]
 
 
+def getTargetWar(path):
+    print('path is ' + path)
+    paths = path.split('/')
+    for p in paths:
+        print(p)
+    print('my target file name is ' + paths[len(paths) - 1])
+    return paths[len(paths) - 1]
+
+
+def getPathName():
+    global war1, path
+    print('当前目录下war:')
+    for war1 in handleUnix("ls /www/webapp/" + _program + "/work/*.war"):
+        if len(war1) == 0:
+            continue
+        print('  | ----' + war1)
+        return war1
+
+
 dx_num = input("请输入要升级的项目（1:dx-web、2:dx-aps、3:dx-agent、4:dx-mt、5:dx-auto）:")
 
 if dx_num == '1':
@@ -42,14 +61,10 @@ elif dx_num == '5':
 else:
     print('未匹配到您输入的序号...')
 
-print('当前目录下war:')
-for war1 in handleUnix("ls /www/webapp/" + _program + "/work/*.war"):
-    if len(war1) == 0:
-        continue
-    print('  | ----' + war1)
+path = getPathName()
 
-war_name = input('请输入要升级的war包名称:')
-a = handleUnix("unzip /www/webapp/" + _program + "/work/" + war_name + " -d /www/webapp/" + _program + "/work/")
+war_name = getTargetWar(path)
+a = handleUnix("unzip /www/webapp/" + _program + "/work/" + war_name + " -o -d /www/webapp/" + _program + "/work/")
 
 if len(a) > 0:
     print('解压成功...')

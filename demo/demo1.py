@@ -1,5 +1,8 @@
-li = [1, 2, 3, 4]
+path = '/www/webapp/dx-agent/work/dx-agent-3.7.2-SNAPSHOT.war'
 
-del li[2]
+paths = path.split('/')
 
-print(li)
+for p in paths:
+    print(p)
+
+print('my target file name is ' + paths[len(paths) - 1])
