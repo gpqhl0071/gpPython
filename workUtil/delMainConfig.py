@@ -13,7 +13,7 @@ jarList = [
     "hutool-all"
 ]
 
-for root, dirs, files in os.walk("E:\dx-web-3.8.4-SNAPSHOT-dev"):
+for root, dirs, files in os.walk("D:\dx-dm-3.7.2-SNAPSHOT-dev"):
     # 过滤敏感文件
     if len(files) > 0:
         for file in files:
