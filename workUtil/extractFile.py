@@ -29,7 +29,10 @@ for srcFile in resultList:
 # 文件重命名.zip
 for root, dirs, files in os.walk(_targetPath):
     for file in files:
+        # 拼接全路径
         srcName = root + "\\" + file
+        # 修改文件后缀
         targetName = root + "\\" + file.replace('.war', '.zip')
+        # 重命名
         os.rename(srcName, targetName)
         print('%s replace %s' % (srcName, targetName))
