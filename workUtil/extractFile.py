@@ -1,22 +1,35 @@
 import os
 import shutil
 
+_targetPath = 'D:\war'
+_srcPath = 'D:\WORK\dx-new1'
+_suffix = '.war'
+
 
 def extract(path, suffix):
     resultList = []
     for root, dirs, files in os.walk(path):
         if len(files) == 0:
             continue
-        for file in files:
-            if file.endswith(suffix):
-                print(root + "\\" + file)
-                resultList.append(root + "\\" + file)
-
+        else:
+            for file in files:
+                if file.endswith(suffix):
+                    print(root + "\\" + file)
+                    resultList.append(root + "\\" + file)
     return resultList
 
 
-resultList = extract("D:\WORK\dx-new1", ".war")
+resultList = extract(_srcPath, _suffix)
 
+# 完成文件的复制
 for srcFile in resultList:
-    print("复制..." + srcFile)
-    shutil.copy(srcFile, "D:\war")
+    print("复制源文件..." + srcFile)
+    shutil.copy(srcFile, _targetPath)
+
+# 文件重命名.zip
+for root, dirs, files in os.walk(_targetPath):
+    for file in files:
+        srcName = root + "\\" + file
+        targetName = root + "\\" + file.replace('.war', '.zip')
+        os.rename(srcName, targetName)
+        print('%s replace %s' % (srcName, targetName))
