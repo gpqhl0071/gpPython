@@ -1,6 +1,6 @@
 import os
 
-delList = [
+_delList = [
     "jdbc.properties",
     "redis.properties",
     "tradeCenter.properties",
@@ -9,7 +9,7 @@ delList = [
     "logback.xml",
 ]
 
-jarList = [
+_jarList = [
     "hutool-all"
 ]
 
@@ -17,7 +17,7 @@ for root, dirs, files in os.walk("D:\dx-dm-3.7.2-SNAPSHOT-dev"):
     # 过滤敏感文件
     if len(files) > 0:
         for file in files:
-            if file in delList:
+            if file in _delList:
                 print(root + ", " + file)
 
     # 遍历lib目录下的jar
