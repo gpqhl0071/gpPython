@@ -2,7 +2,7 @@ import os
 import shutil
 
 _targetPath = 'D:\war'
-_srcPath = 'D:\WORK\dx-new1'
+_srcPath = 'D:\IdeaProjectsNew\dx-web-app'
 _suffix = '.war'
 
 
