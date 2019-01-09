@@ -3,9 +3,9 @@ import json
 
 # 爬取网站：http://huoche.tuniu.com/station_200_1102
 
-param_date = '2019-02-02'
-param_start_station = '牡丹江'
-param_end_station = '鸡西'
+param_date = '2019-02-09'
+param_start_station = '哈尔滨'
+param_end_station = '北京'
 
 # 常用地区码：鸡西：1109、北京：200、哈尔滨：1102、牡丹江：1110
 r = requests.get(

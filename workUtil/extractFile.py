@@ -1,9 +1,22 @@
 import os
 import shutil
 
+# 导出到目录
 _targetPath = 'D:\war'
-_srcPath = 'D:\IdeaProjectsNew\dx-web-app'
-_suffix = '.war'
+# 目标搜索路劲
+_srcPath = 'D:\IdeaProjects\dx-service'
+# 要查找文件的后缀
+_suffix = '.tar.gz'
+
+
+def mkdir():
+    folder = os.path.exists(_targetPath)
+
+    if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
+        os.makedirs(_targetPath)  # makedirs 创建文件时如果路径不存在会创建这个路径
+        print("create path : %s success " % (_targetPath))
+    else:
+        print("path : %s exist " % (_targetPath))
 
 
 def extract(path, suffix):
@@ -18,6 +31,8 @@ def extract(path, suffix):
                     resultList.append(root + "\\" + file)
     return resultList
 
+
+mkdir()
 
 resultList = extract(_srcPath, _suffix)
 
