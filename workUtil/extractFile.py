@@ -4,9 +4,9 @@ import shutil
 # 导出到目录
 _targetPath = 'D:\war'
 # 目标搜索路劲
-_srcPath = 'D:\IdeaProjects\dx-service'
+_srcPath = 'D:\IdeaProjectsNew\dx-web-app'
 # 要查找文件的后缀
-_suffix = '.tar.gz'
+_suffix = '.war'
 
 
 def mkdir():

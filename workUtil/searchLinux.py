@@ -5,7 +5,7 @@
 import os
 
 # 目标搜索路劲
-_srcPath = '/www/webapp/'
+_srcPath = '/www/webapp'
 
 
 # 要查找文件的后缀
@@ -15,6 +15,9 @@ _srcPath = '/www/webapp/'
 def extract(path, suffix):
     resultList = []
     for root, dirs, files in os.walk(path):
+        # 增加过滤不必要的扫描
+        if 'backup' in root:
+            continue
         if len(files) == 0:
             continue
         else:
