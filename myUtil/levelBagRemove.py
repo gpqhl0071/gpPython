@@ -41,7 +41,7 @@ def delete():
         return
 
     for handleDel in handleDelList:
-        print('delete path 【' + __map[removeFile] + '】success...')
+        print('delete path 【' + handleDel + '】success...')
         os.remove(handleDel)
 
     print("handle delete end.")
