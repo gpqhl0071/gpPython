@@ -3,7 +3,7 @@ import json
 
 # 爬取网站：http://huoche.tuniu.com/station_200_1102
 
-param_date = '2019-02-09'
+param_date = '2019-05-09'
 param_start_station = '鸡西'
 param_end_station = '牡丹江'
 
