@@ -9,7 +9,7 @@ __format1 = ''
 __map = {}
 __aps_remove_list = ['jdbc.properties', 'logback.xml', 'mongoDB.properties', 'dubbo-consumer-config.xml',
                      'redis.properties', 'tradeCenter.properties', 'acp_sdk.properties',
-                     'acp_sdk898150107630858.properties']
+                     'acp_sdk898150107630858.properties', 'dubbo.properties']
 
 
 def iterFile(path):
