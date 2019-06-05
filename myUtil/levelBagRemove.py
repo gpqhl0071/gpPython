@@ -2,7 +2,6 @@
 # author：gaopeng
 
 import os
-import re
 
 _PATH = 'G:\levelBag\dx-autotask-4.2.0-SNAPSHOT-dev'
 __format1 = ''
@@ -27,9 +26,30 @@ def iterFile(path):
             __map[f] = p1
 
 
-if __name__ == '__main__':
-    iterFile(_PATH)
+def delete():
+    handleDelList = []
+
     for removeFile in __aps_remove_list:
         if removeFile in __map:
-            print('handle delete path 【' + __map[removeFile] + '】')
-            os.remove(__map[removeFile])
+            print('path 【' + __map[removeFile] + '】')
+            handleDelList.append(__map[removeFile])
+
+    handle = input('是否删除全部 是-Y， 否-N ：')
+
+    if handle != 'Y':
+        print("stop handle delete.")
+        return
+
+    for handleDel in handleDelList:
+        print('delete path 【' + __map[removeFile] + '】success...')
+        os.remove(handleDel)
+
+    print("handle delete end.")
+
+
+if __name__ == '__main__':
+    _PATH = input('输出目标项目路径：')
+
+    iterFile(_PATH)
+
+    delete()
