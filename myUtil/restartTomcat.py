@@ -81,11 +81,15 @@ if result in 'true':
         if busi_flag in '1':
             handleUnix("kill -9 " + processId)
             handleUnix("sh /www/" + _tomcatProgram + "/bin/startup.sh")
+            print("tail -f /www/" + _tomcatProgram + "/logs/catalina.out")
+
         elif busi_flag in '2':
             handleUnix("sh /www/webapp/" + _program + "/work/bin/restart.sh")
+            print("tail -f /www/webapp/" + _program + "/work/logs/stdout.log")
         else:
             print('未匹配到您输入的序号...')
     else:
         print('终止')
 else:
     print('终止')
+
