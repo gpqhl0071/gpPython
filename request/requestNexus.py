@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 _dx_name = ''
 _download_top_url = 'http://nexus.td.internal/nexus/repository/'
@@ -8,8 +9,17 @@ _suffix = '.jar'
 _version = '6.0.0'
 download_url = ''
 
-
 _projectList = ['dx-web', 'dx-aps', 'dx-autotask ', 'dx-dm', 'dx-mt', 'dx-agent']
+_projectServerList = ['dx-public-api-service', 'dx-assets-api-service', 'dx-users-api-service',
+                      'dx-activity-api-service', 'dx-strategy-api-service', ]
+
+
+def handleUnix(command):
+    str = os.popen(command).read()
+    a = str.split("\n")
+    for b in a:
+        print(b)
+    return a
 
 
 def requestNexus():
@@ -54,7 +64,7 @@ def tranResult(r):
         rs = d['name'] + '-' + d['version'] + ": " + download_url
         # print(rs)
 
-        map = {'name': d['name'] + '-' + d['version'], 'value': download_url}
+        map = {'name': d['name'] + '-' + d['version'] + _suffix, 'value': download_url}
 
         rs_list.append(map)
 
@@ -62,9 +72,11 @@ def tranResult(r):
 
 
 def setSuffix():
+    global _suffix
     if _projectList.__contains__(_dx_name):
-        global _suffix
         _suffix = '.war'
+    else:
+        _suffix = '-assembly.tar.gz'
 
 
 def getUrl(value):
@@ -78,6 +90,7 @@ def getUrl(value):
 if __name__ == "__main__":
     _dx_name = input('请输入jar名字：')
     _version = input('请输入分支版本号：')
+    target_name = ''
 
     r = requestNexus()
 
@@ -88,8 +101,17 @@ if __name__ == "__main__":
 
         temps = tempName.split('-')
         if temps[1] == _version:
-            print(tempName + " = " + _map['name'] + ':' + _map['value'])
+            # print(tempName + " = " + _map['name'] + ':' + _map['value'])
+            target_name = _map['name']
             download_url = _map['value']
             break
 
-    print(download_url)
+    print('wget ' + download_url)
+    handleUnix('wget ' + download_url)
+    if _dx_name in _projectList:
+        print('mv ' + target_name + ' /www/webapp/' + _dx_name + '/work/')
+        handleUnix('mv ' + target_name + ' /www/webapp/' + _dx_name + '/work/')
+    if _dx_name in _projectServerList:
+        print('mv ' + target_name + ' /www/webapp/service/')
+        handleUnix('mv ' + target_name + ' /www/webapp/service/')
+
