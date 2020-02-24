@@ -5,6 +5,9 @@ _dx_name = ''
 _download_top_url = 'http://nexus.td.internal/nexus/repository/'
 _download_group = 'maven-snapshots/'
 _suffix = '.jar'
+_version = '6.0.0'
+download_url = ''
+
 
 _projectList = ['dx-web', 'dx-aps', 'dx-autotask ', 'dx-dm', 'dx-mt', 'dx-agent']
 
@@ -12,7 +15,7 @@ _projectList = ['dx-web', 'dx-aps', 'dx-autotask ', 'dx-dm', 'dx-mt', 'dx-agent'
 def requestNexus():
     global r
     param1 = {"action": "coreui_Search", "method": "read", "data": [
-        {"page": 1, "start": 0, "limit": 300, "sort": [{"property": "name", "direction": "ASC"}],
+        {"page": 1, "start": 0, "limit": 300, "sort": [{"property": "version", "direction": "DESC"}],
          "filter": [{"property": "format", "value": "maven2"},
                     {"property": "attributes.maven2.artifactId", "value": _dx_name}]}], "type": "rpc", "tid": 13}
     # 公司内部地址
@@ -74,10 +77,19 @@ def getUrl(value):
 
 if __name__ == "__main__":
     _dx_name = input('请输入jar名字：')
+    _version = input('请输入分支版本号：')
 
     r = requestNexus()
 
     rs = r.text
     _list = tranResult(rs)
     for _map in _list:
-        print(_map['name'] + ':' + _map['value'])
+        tempName = _map['name'][len(_dx_name): len(_map['name'])]
+
+        temps = tempName.split('-')
+        if temps[1] == _version:
+            print(tempName + " = " + _map['name'] + ':' + _map['value'])
+            download_url = _map['value']
+            break
+
+    print(download_url)
