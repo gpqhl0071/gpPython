@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import re
 
 _dx_name = ''
 _download_top_url = 'http://nexus.td.internal/nexus/repository/'
@@ -9,9 +10,18 @@ _suffix = '.jar'
 _version = '6.0.0'
 download_url = ''
 
-_projectList = ['dx-web', 'dx-aps', 'dx-autotask ', 'dx-dm', 'dx-mt', 'dx-agent']
+_projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-mt', 'dx-agent']
 _projectServerList = ['dx-public-api-service', 'dx-assets-api-service', 'dx-users-api-service',
                       'dx-activity-api-service', 'dx-strategy-api-service', ]
+
+
+def getProcessId(str):
+    for b in str:
+        if ('/bin/tomcat-juli.jar' in b):
+            pattern = re.compile('-?[1-9]\d*')
+            items = re.findall(pattern, b)
+            # print(_tomcatProgram + '进程ID：' + items[0])
+            return items[0]
 
 
 def handleUnix(command):
@@ -115,3 +125,38 @@ if __name__ == "__main__":
         print('mv ' + target_name + ' /www/webapp/service/')
         handleUnix('mv ' + target_name + ' /www/webapp/service/')
 
+
+    # 针对tomcat服务脚本话重复工作------------ begin
+    # _projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-mt', 'dx-agent']
+    tomcatName = ''
+    if _dx_name == 'dx-web':
+        tomcatName = 'tomcatdx'
+    elif _dx_name == 'dx-aps':
+        tomcatName = 'tomcataps'
+    elif _dx_name == 'dx-autotask':
+        tomcatName = 'tomcatauto'
+    elif _dx_name == 'dx-dm':
+        tomcatName = 'tomcatadmin'
+    elif _dx_name == 'dx-agent':
+        tomcatName = 'tomcatAgent'
+    else:
+        print("非tomat服务")
+
+    if tomcatName != '':
+        print("rm -rf /www/webapp/" + _dx_name + "/work/WEB-INF/lib/")
+        handleUnix("rm -rf /www/webapp/" + _dx_name + "/work/WEB-INF/lib/")
+
+        print('unzip -o /www/webapp/' + _dx_name + '/work/' + target_name + ' -d /www/webapp/' + _dx_name + '/work/')
+        handleUnix(
+            'unzip -o /www/webapp/' + _dx_name + '/work/' + target_name + ' -d /www/webapp/' + _dx_name + '/work/')
+
+        print("ps -ef | grep " + tomcatName)
+        tomcatdx = handleUnix("ps -ef | grep " + tomcatName)
+
+        processId = getProcessId(tomcatdx)
+
+        print("kill -9 " + processId)
+        handleUnix("kill -9 " + processId)
+        print("sh /www/" + tomcatName + "/bin/startup.sh")
+        handleUnix("sh /www/" + tomcatName + "/bin/startup.sh")
+    # 针对tomcat服务脚本话重复工作----------- end
