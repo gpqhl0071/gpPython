@@ -159,4 +159,5 @@ if __name__ == "__main__":
         handleUnix("kill -9 " + processId)
         print("sh /www/" + tomcatName + "/bin/startup.sh")
         handleUnix("sh /www/" + tomcatName + "/bin/startup.sh")
+        print("tail -n 50 -f /www/" + tomcatName + "/logs/catalina.out")
     # 针对tomcat服务脚本话重复工作----------- end
