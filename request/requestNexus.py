@@ -98,7 +98,8 @@ def getUrl(value):
 
 
 if __name__ == "__main__":
-    _dx_name = input('请输入jar名字：')
+    print("可录入项目：dx-web, dx-aps, dx-autotask, dx-dm, dx-agent")
+    _dx_name = input('请输入项目名字：')
     _version = input('请输入分支版本号：')
     target_name = ''
 
@@ -124,7 +125,6 @@ if __name__ == "__main__":
     if _dx_name in _projectServerList:
         print('mv ' + target_name + ' /www/webapp/service/')
         handleUnix('mv ' + target_name + ' /www/webapp/service/')
-
 
     # 针对tomcat服务脚本话重复工作------------ begin
     # _projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-mt', 'dx-agent']
@@ -155,9 +155,12 @@ if __name__ == "__main__":
 
         processId = getProcessId(tomcatdx)
 
-        print("kill -9 " + processId)
-        handleUnix("kill -9 " + processId)
-        print("sh /www/" + tomcatName + "/bin/startup.sh")
-        handleUnix("sh /www/" + tomcatName + "/bin/startup.sh")
-        print("tail -n 50 -f /www/" + tomcatName + "/logs/catalina.out")
+        if processId != '':
+            print("kill -9 " + processId)
+            handleUnix("kill -9 " + processId)
+            print("sh /www/" + tomcatName + "/bin/startup.sh")
+            handleUnix("sh /www/" + tomcatName + "/bin/startup.sh")
+            print("tail -n 50 -f /www/" + tomcatName + "/logs/catalina.out")
+        else:
+            print("服务没有启动，请手动启动服务" + tomcatName)
     # 针对tomcat服务脚本话重复工作----------- end
