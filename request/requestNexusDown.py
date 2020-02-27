@@ -126,6 +126,11 @@ if __name__ == "__main__":
         handleUnix('mkdir ' + _dx_name)
         handleUnix('unzip -o ' + target_name + ' -d /www/peng/online_test/' + _dx_name + "/")
         handleUnix('rm -rf ' + target_name)
+        handleUnix('rm -rf /www/peng/online_test/' + _dx_name + '/WEB-INF/classes/jdbc.properties')
+        handleUnix('rm -rf /www/peng/online_test/' + _dx_name + '/WEB-INF/classes/redis.properties')
+        handleUnix('rm -rf /www/peng/online_test/' + _dx_name + '/WEB-INF/classes/tradeCenter.properties')
+        handleUnix('rm -rf /www/peng/online_test/' + _dx_name + '/WEB-INF/classes/properties/')
+        handleUnix('rm -rf /www/peng/online_test/' + _dx_name + '/WEB-INF/classes/spring/')
 
     for _dx_name in _projectServerList:
         target_name = ''
@@ -149,14 +154,23 @@ if __name__ == "__main__":
 
         if _dx_name in 'dx-public-api-service':
             handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-public-service/')
+            handleUnix('rm -rf dx-public-service/conf/dubbo.properties')
         elif _dx_name in 'dx-assets-api-service':
             handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-assets-service/')
+            handleUnix('rm -rf dx-assets-service/conf/dubbo.properties')
+            handleUnix('rm -rf dx-assets-service/conf/jdbc.properties')
         elif _dx_name in 'dx-user-api-service':
             handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-user-service/')
+            handleUnix('rm -rf dx-user-service/conf/dubbo.properties')
+            handleUnix('rm -rf dx-user-service/conf/jdbc.properties')
         elif _dx_name in 'dx-activity-api-service':
             handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-activity-service/')
+            handleUnix('rm -rf dx-activity-service/conf/dubbo.properties')
+            handleUnix('rm -rf dx-activity-service/conf/jdbc.properties')
         elif _dx_name in 'dx-strategy-api-service':
             handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-strategy-service/')
+            handleUnix('rm -rf dx-strategy-service/conf/dubbo.properties')
+            handleUnix('rm -rf dx-strategy-service/conf/jdbc.properties')
         else:
             print("项目名称有误。")
 
