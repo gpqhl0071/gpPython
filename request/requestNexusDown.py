@@ -10,9 +10,9 @@ _suffix = '.jar'
 _version = '6.0.0'
 download_url = ''
 
-_projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-mt', 'dx-agent']
+_projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-agent']
 _projectServerList = ['dx-public-api-service', 'dx-assets-api-service', 'dx-user-api-service',
-                      'dx-activity-api-service', 'dx-strategy-api-service', ]
+                      'dx-activity-api-service', 'dx-strategy-api-service']
 
 
 def getProcessId(str):
@@ -98,27 +98,69 @@ def getUrl(value):
 
 
 if __name__ == "__main__":
-    print("可录入项目：dx-web, dx-aps, dx-autotask, dx-dm, dx-agent")
-    _dx_name = input('请输入项目名字：')
+    # print("可录入项目：dx-web, dx-aps, dx-autotask, dx-dm, dx-agent")
+    # _dx_name = input('请输入项目名字：')
     _version = input('请输入分支版本号：')
-    target_name = ''
+    handleUnix('rm -rf dx-* ')
 
-    r = requestNexus()
+    for _dx_name in _projectList:
+        target_name = ''
 
-    rs = r.text
-    _list = tranResult(rs)
-    for _map in _list:
-        tempName = _map['name'][len(_dx_name): len(_map['name'])]
+        r = requestNexus()
 
-        temps = tempName.split('-')
-        if temps[1] == _version:
-            # print(tempName + " = " + _map['name'] + ':' + _map['value'])
-            target_name = _map['name']
-            download_url = _map['value']
-            break
+        rs = r.text
+        _list = tranResult(rs)
+        for _map in _list:
+            tempName = _map['name'][len(_dx_name): len(_map['name'])]
 
-    print('wget ' + download_url)
-    handleUnix('wget ' + download_url)
+            temps = tempName.split('-')
+            if temps[1] == _version:
+                target_name = _map['name']
+                download_url = _map['value']
+                break
+
+        print('wget ' + download_url)
+        handleUnix('wget ' + download_url)
+
+        print(target_name)
+        handleUnix('mkdir ' + _dx_name)
+        handleUnix('unzip -o ' + target_name + ' -d /www/peng/online_test/' + _dx_name + "/")
+        handleUnix('rm -rf ' + target_name)
+
+    for _dx_name in _projectServerList:
+        target_name = ''
+
+        r = requestNexus()
+
+        rs = r.text
+        _list = tranResult(rs)
+        for _map in _list:
+            tempName = _map['name'][len(_dx_name): len(_map['name'])]
+
+            temps = tempName.split('-')
+            if temps[1] == _version:
+                target_name = _map['name']
+                download_url = _map['value']
+                break
+
+        print('wget ' + download_url)
+        handleUnix('wget ' + download_url)
+        handleUnix('tar -zxvf ' + target_name)
+
+        if _dx_name in 'dx-public-api-service':
+            handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-public-service/')
+        elif _dx_name in 'dx-assets-api-service':
+            handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-assets-service/')
+        elif _dx_name in 'dx-user-api-service':
+            handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-user-service/')
+        elif _dx_name in 'dx-activity-api-service':
+            handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-activity-service/')
+        elif _dx_name in 'dx-strategy-api-service':
+            handleUnix('mv ' + _dx_name + '-' + _version + '-SNAPSHOT dx-strategy-service/')
+        else:
+            print("项目名称有误。")
+
+        handleUnix('rm -rf ' + target_name)
 
     # 针对tomcat服务脚本话重复工作----------- end
 
@@ -128,4 +170,3 @@ if __name__ == "__main__":
 # 4 删除敏感文件 或 文件夹
 
 # 5 本地打包online环境遍历配置，覆盖当前目录所有项目。
-
