@@ -11,7 +11,7 @@ _version = '6.0.0'
 download_url = ''
 
 _projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-mt', 'dx-agent']
-_projectServerList = ['dx-public-api-service', 'dx-assets-api-service', 'dx-users-api-service',
+_projectServerList = ['dx-public-api-service', 'dx-assets-api-service', 'dx-user-api-service',
                       'dx-activity-api-service', 'dx-strategy-api-service', ]
 
 
