@@ -4,7 +4,7 @@ import os
 import re
 
 _dx_name = ''
-_download_top_url = 'http://nexus.td.internal/nexus/repository/'
+_download_top_url = 'http://nexus.1001dx.com/repository/'
 _download_group = 'maven-snapshots/'
 _suffix = '.jar'
 _version = '6.0.0'
@@ -32,15 +32,34 @@ def handleUnix(command):
     return a
 
 
+def requestSnapshotVersion():
+    param2 = {"action": "coreui_Component", "method": "readComponentAssets", "data": [
+        {"page": 1, "start": 0, "limit": 25, "filter": [{"property": "repositoryName", "value": "maven-snapshots"},
+                                                        {"property": "componentModel",
+                                                         "value": "{\"id\":\"maven-snapshots:com.redhorse:" + _dx_name + ":" + _version + "-SNAPSHOT\",\"repositoryName\":\"maven-snapshots\",\"group\":\"com.redhorse\",\"name\":\"" + _dx_name + "\",\"version\":\"" + _version + "-SNAPSHOT\",\"format\":\"maven2\",\"healthCheckLoading\":true}"}]}],
+              "type": "rpc", "tid": 12}
+
+    # param2 = {"action":"coreui_Component","method":"readComponentAssets","data":[{"page":1,"start":0,"limit":25,"filter":[{"property":"repositoryName","value":"maven-snapshots"},{"property":"componentModel","value":"{\"id\":\"maven-snapshots:com.redhorse:dx-web:6.1.0-SNAPSHOT\",\"repositoryName\":\"maven-snapshots\",\"group\":\"com.redhorse\",\"name\":\"dx-web\",\"version\":\"6.1.0-SNAPSHOT\",\"format\":\"maven2\",\"healthCheckLoading\":true}"}]}],"type":"rpc","tid":12}
+    url = 'http://nexus.1001dx.com/service/extdirect'
+
+    r = requests.post(url, json=param2)
+    rs = r.text
+    jsonLoad = json.loads(rs)
+    print(jsonLoad['result']['data'][0]['attributes']['maven2']['version'])
+    return jsonLoad['result']['data'][0]['attributes']['maven2']['version']
+
+
 def requestNexus():
     global r
     param1 = {"action": "coreui_Search", "method": "read", "data": [
         {"page": 1, "start": 0, "limit": 300, "sort": [{"property": "version", "direction": "DESC"}],
          "filter": [{"property": "format", "value": "maven2"},
                     {"property": "attributes.maven2.artifactId", "value": _dx_name}]}], "type": "rpc", "tid": 13}
+
     # 公司内部地址
-    url = 'http://192.168.15.188:28081/nexus/service/extdirect'
+    url = 'http://nexus.1001dx.com/service/extdirect'
     r = requests.post(url, json=param1)
+
     return r
 
 
@@ -58,7 +77,8 @@ def tranResult(r):
         path1 = d['group'].replace('.', '/') + '/'
         path2 = _dx_name + '/'
         path3 = (d['version'].split('-'))[0] + '-SNAPSHOT/'
-        path4 = _dx_name + '-' + d['version']
+        # path4 = _dx_name + '-' + d['version']
+        path4 = _dx_name + '-' + requestSnapshotVersion()
 
         global _download_group
         if d['repositoryName'] == 'maven-snapshots':
@@ -116,7 +136,7 @@ if __name__ == "__main__":
             temps = tempName.split('-')
             if temps[1] == _version:
                 target_name = _map['name']
-                download_url = _map['value']
+                download_url = _map['value'];
                 break
 
         print('wget ' + download_url)
