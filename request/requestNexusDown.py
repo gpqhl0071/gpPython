@@ -25,13 +25,14 @@ def getProcessId(str):
 
 
 def handleUnix(command):
+    print('execute : ' + command)
     str = os.popen(command).read()
     a = str.split("\n")
     for b in a:
         print(b)
     return a
 
-
+# 获取SNAPSHOT小版本号
 def requestSnapshotVersion():
     param2 = {"action": "coreui_Component", "method": "readComponentAssets", "data": [
         {"page": 1, "start": 0, "limit": 25, "filter": [{"property": "repositoryName", "value": "maven-snapshots"},
@@ -94,7 +95,7 @@ def tranResult(r):
         rs = d['name'] + '-' + d['version'] + ": " + download_url
         # print(rs)
 
-        map = {'name': d['name'] + '-' + d['version'] + _suffix, 'value': download_url}
+        map = {'name': path4 + _suffix, 'value': download_url}
 
         rs_list.append(map)
 
