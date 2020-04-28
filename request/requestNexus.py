@@ -73,6 +73,9 @@ def tranResult(r):
 
     rs_list = []
     for d in data:
+        if d['version'] != _version + '-SNAPSHOT':
+            continue
+
         path1 = d['group'].replace('.', '/') + '/'
         path2 = _dx_name + '/'
         path3 = (d['version'].split('-'))[0] + '-SNAPSHOT/'
