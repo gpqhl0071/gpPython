@@ -138,9 +138,9 @@ if __name__ == "__main__":
     print("## 执行前，需要确保nexus私服(http://nexus.1001dx.com/)已经上传了改动代码后的最新jar: dx-web-app -> dx-web （可通过查看gitlab-ci的构建进度，或者手动执行上传操作）")
     print("## 国际测试 -- 部署分布")
     print("##   192.168.15.31 -> dx-aps、dx-autotask、dx-agent")
-    print("##   192.168.15.32 -> dx-web、dx-dm、dx-service*(不能使用该脚本，使用jenkins部署)")
+    print("##   192.168.15.32 -> dx-web、dx-dm、dx-service*")
     print("## 公社测试 -- 部署分布")
-    print("##   192.168.15.32")
+    print("##   192.168.15.33")
     print("########################################################################################################################")
 
     print("可录入项目：1:dx-web, 2:dx-aps, 3:dx-autotask, 4:dx-dm, 5:dx-agent")
