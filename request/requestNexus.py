@@ -119,11 +119,35 @@ def getUrl(value):
     return tranResult(rs)
 
 
+def change_dx_name():
+    global _dx_name
+    if _dx_name == '1':
+        _dx_name = 'dx-web'
+    elif _dx_name == '2':
+        _dx_name = 'dx-aps'
+    elif _dx_name == '3':
+        _dx_name = 'dx-autotask'
+    elif _dx_name == '4':
+        _dx_name = 'dx-dm'
+    elif _dx_name == '5':
+        _dx_name = 'dx-agent'
+
+
 if __name__ == "__main__":
-    print("可录入项目：dx-web, dx-aps, dx-autotask, dx-dm, dx-agent")
-    _dx_name = input('请输入项目名字：')
+    print("########################################################################################################################")
+    print("## 执行前，需要确保nexus私服(http://nexus.1001dx.com/)已经上传了改动代码后的最新jar: dx-web-app -> dx-web （可通过查看gitlab-ci的构建进度，或者手动执行上传操作）")
+    print("## 国际测试 -- 部署分布")
+    print("##   192.168.15.31 -> dx-aps、dx-autotask、dx-agent")
+    print("##   192.168.15.32 -> dx-web、dx-dm、dx-service*(不能使用该脚本，使用jenkins部署)")
+    print("## 公社测试 -- 部署分布")
+    print("##   192.168.15.32")
+    print("可录入项目：1:dx-web, 2:dx-aps, 3:dx-autotask, 4:dx-dm, 5:dx-agent")
+    print("########################################################################################################################")
+    _dx_name = input('请输入项目名字或编号：')
     _version = input('请输入分支版本号：')
     target_name = ''
+
+    change_dx_name()
 
     r = requestNexus()
     snapshotVersion = requestSnapshotVersion()

@@ -1,8 +1,4 @@
-path = '/www/webapp/dx-agent/work/dx-agent-3.7.2-SNAPSHOT.war'
+import sys
 
-paths = path.split('/')
-
-for p in paths:
-    print(p)
-
-print('my target file name is ' + paths[len(paths) - 1])
+print(sys.argv[1])
+print(sys.argv[2])
