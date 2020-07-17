@@ -141,8 +141,9 @@ if __name__ == "__main__":
     print("##   192.168.15.32 -> dx-web、dx-dm、dx-service*(不能使用该脚本，使用jenkins部署)")
     print("## 公社测试 -- 部署分布")
     print("##   192.168.15.32")
-    print("可录入项目：1:dx-web, 2:dx-aps, 3:dx-autotask, 4:dx-dm, 5:dx-agent")
     print("########################################################################################################################")
+
+    print("可录入项目：1:dx-web, 2:dx-aps, 3:dx-autotask, 4:dx-dm, 5:dx-agent")
     _dx_name = input('请输入项目名字或编号：')
     _version = input('请输入分支版本号：')
     target_name = ''
@@ -187,7 +188,7 @@ if __name__ == "__main__":
     elif _dx_name == 'dx-agent':
         tomcatName = 'tomcatAgent'
     else:
-        print("非tomat服务")
+        print("非tomcat服务")
 
     if tomcatName != '':
         print("rm -rf /www/webapp/" + _dx_name + "/work/WEB-INF/lib/")
