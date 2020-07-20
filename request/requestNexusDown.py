@@ -9,6 +9,7 @@ _download_group = 'maven-snapshots/'
 _suffix = '.jar'
 _version = '6.0.0'
 download_url = ''
+snapshotVersion = ''
 
 _projectList = ['dx-web', 'dx-aps', 'dx-autotask', 'dx-dm', 'dx-agent']
 _projectServerList = ['dx-public-api-service', 'dx-assets-api-service', 'dx-user-api-service',
@@ -75,11 +76,14 @@ def tranResult(r):
 
     rs_list = []
     for d in data:
+        if d['version'] != _version + '-SNAPSHOT':
+            continue
+
         path1 = d['group'].replace('.', '/') + '/'
         path2 = _dx_name + '/'
         path3 = (d['version'].split('-'))[0] + '-SNAPSHOT/'
         # path4 = _dx_name + '-' + d['version']
-        path4 = _dx_name + '-' + requestSnapshotVersion()
+        path4 = _dx_name + '-' + snapshotVersion
 
         global _download_group
         if d['repositoryName'] == 'maven-snapshots':
@@ -128,6 +132,7 @@ if __name__ == "__main__":
         target_name = ''
 
         r = requestNexus()
+        snapshotVersion = requestSnapshotVersion()
 
         rs = r.text
         _list = tranResult(rs)
@@ -157,6 +162,7 @@ if __name__ == "__main__":
         target_name = ''
 
         r = requestNexus()
+        snapshotVersion = requestSnapshotVersion()
 
         rs = r.text
         _list = tranResult(rs)
